@@ -1,0 +1,1014 @@
+openapi: 3.0.0
+info:
+  title: Digital Battery Passport
+  version: '0.1'
+  description: |
+    This OpenAPI specification describes the DBP Back Office API that needs to be implemented and coupled to the Back Office data storage. 
+    There are 3 kinds of DBP's and endpoints are defined for each):
+    1. Public Information Tier: 
+      - Visible to everyone (consumers, general public) via a QR code scan. 
+      - Battery ID & Model: Manufacturer name, battery type, and manufacturing facility. 
+      - Performance & Durability: Expected life cycle, capacity, and power. 
+      - Environmental Impact: Carbon footprint (per kWh of energy delivered), recycled content percentage, and renewable content share. 
+      - Regulatory Compliance: CE mark, EU declaration of conformity.
+    
+    2. Parties with Legitimate Interest Tier (Restricted Access):
+      - Accessible to specific, authorized entities, such as independent repairers, remanufacturers, repurposing operators, and recyclers. 
+      - On top of the tier 1 data, the following data must be available to this tier:
+          - Detailed Composition: Information on cathode, anode, and electrolyte materials. 
+          - Dismantling & Safety: Disassembly instructions, exploded diagrams, and safety guidelines. 
+          - Live Data: Current State of Health (SoH) and usage/charging history. 
+    
+    3. Regulatory Data Tier (Strictly Confidential). 
+      - Accessible only by public authoritie, such as the European Commission, national market surveillance authorities, and notified bodies):  
+      - Audit Documentation: Detailed evidence of regulatory compliance. 
+      - Testing Results: Full technical documentation and test reports. 
+      - Proprietary Data: Highly sensitive material composition or manufacturing process data not required for safe handling, but necessary for regulatory validation.
+security:
+  - api-key: []
+paths:
+  /DBP:
+    post:
+      security:
+        - api-key: []
+      tags:
+        - DigitalBatteryPassport
+      summary: Create a resource of type DigitalBatteryPassport.
+      description: Create a resource of type DigitalBatteryPassport.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalBatteryPassport'
+        required: true
+      responses:
+        '201':
+          description: Digital Battery Passport created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDigitalBatteryPassportResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /DBP/{resourceId}:
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: Retrieve a resource of type rootElement by id.
+      description: Retrieve a resource of type rootElement by id.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get a Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server
+    put:
+      tags:
+        - DigitalBatteryPassport
+      summary: >-
+        Fully update a resource of type DigitalBatteryPassport or create it if
+        it does not exist.
+      description: >-
+        Fully update a resource of type rootElement or create it if it does not
+        exist.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalBatteryPassport'
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /DBP/{resourceId}/dynamicdata:
+    put:
+      security:
+        - api-key: []
+      tags:
+        - DigitalBatteryPassport
+      summary: update a resource of type rootElement or create it if it does not exist.
+      description: >-
+        Fully update a resource of type rootElement or create it if it does not
+        exist.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalBatteryPassport'
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: request get the dynamic data of a specific battery.
+      description: request get the performance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /DBP/{resourceId}/performance:
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: request get the performance data of a specific battery.
+      description: request get the performance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/register:
+    post:
+      tags:
+        - Back Office API registration
+      summary: >-
+        Register the Back Office API , where the DBP data can be collected, will
+        overwrite existing API registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BORegistration'
+      responses:
+        '201':
+          description: registered successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+        - Back Office API registration
+      summary: Get the current back office registration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BORegistration'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/dbp/:
+    get:
+      tags:
+        - Back Office API DBP
+      summary: Get a passport for Tier1 (public) access
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/dbp/t2:
+    get:
+      tags:
+        - Back Office API DBP
+      summary: Get a passport for Tier2 (Legitimate Access) access
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/dbp/t3:
+    get:
+      tags:
+        - Back Office API DBP
+      summary: Get a passport for Tier3 (Regulator) access
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    BORegistration:
+      type: object
+      required:
+        - boURL
+      properties:
+        boURL:
+          type: string
+          format: URI
+        username:
+          type: string
+        password:
+          type: string
+        apiKey:
+          type: string
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    CreateDigitalBatteryPassportResponse:
+      type: object
+      properties:
+        DBPId:
+          type: string
+      required:
+        - DBPId
+    Performance:
+      description: >-
+        DIN Cluster - Capacity energy and voltage, Power capability, Energy
+        efficiency, Internal resistance, Battery lifetime, Temperature
+        conditions
+      required:
+        - batteryTechnicalProperties
+        - batteryCondition
+      additionalProperties: false
+      properties:
+        batteryTechnicalProperties:
+          required:
+            - roundTripEfficiencyFade
+            - cRate
+            - initialInternalResistance
+            - originalPowerCapability
+            - ratedCapacity
+            - capacityThresholdForExhaustion
+            - nominalVoltage
+            - lifetimeReferenceTest
+            - expectedLifetime
+            - powerFade
+            - maximumVoltage
+            - cRateLifeCycleTest
+            - roundTripEfficiencyat50PerCentCycleLife
+            - ratedMaximumPower
+            - roundtripEfficiency
+            - temperatureRangeIdleState
+            - minimumVoltage
+            - expectedNumberOfCycles
+          additionalProperties: false
+          properties:
+            roundTripEfficiencyFade:
+              description: DIN 6.7.4.5
+              type: number
+            cRate:
+              description: DIN 6.7.6.6 (2)
+              type: number
+            initialInternalResistance:
+              items:
+                description: DIN 6.7.5.2
+                required:
+                  - batteryComponent
+                  - ohmicResistance
+                additionalProperties: false
+                properties:
+                  batteryComponent:
+                    description: cell / pack
+                    type: string
+                  ohmicResistance:
+                    type: number
+                type: object
+              minItems: 1
+              type: array
+            originalPowerCapability:
+              items:
+                description: DIN 6.7.3.2
+                required:
+                  - powerCapabilityAt
+                  - atSoC
+                additionalProperties: false
+                properties:
+                  powerCapabilityAt:
+                    type: number
+                  atSoC:
+                    type: number
+                type: object
+              minItems: 1
+              type: array
+            ratedCapacity:
+              description: DIN 6.7.2.2
+              type: number
+            capacityThresholdForExhaustion:
+              description: DIN 6.7.6.9
+              type: number
+            nominalVoltage:
+              description: DIN 6.7.2.11
+              type: number
+            lifetimeReferenceTest:
+              description: DIN 6.7.6.5
+              type: string
+            powerCapabilityRatio:
+              description: DIN 6.7.3.6
+              type: number
+            expectedLifetime:
+              description: DIN 6.7.6.2
+              maximum: 32767
+              minimum: -32768
+              type: integer
+            powerFade:
+              description: DIN 6.7.3.4
+              type: number
+            maximumVoltage:
+              description: DIN 6.7.2.10
+              type: number
+            ratedEnergy:
+              description: DIN 6.7.2.5
+              type: number
+            cRateLifeCycleTest:
+              description: DIN 6.7.6.6 (1)
+              type: number
+            roundTripEfficiencyat50PerCentCycleLife:
+              description: DIN 6.7.4.3
+              type: number
+            ratedMaximumPower:
+              description: DIN 6.7.3.3
+              type: number
+            roundtripEfficiency:
+              description: DIN 6.7.4.2
+              type: number
+            temperatureRangeIdleState:
+              description: DIN 6.7.7.3, 6.7.7.4
+              required:
+                - maximum
+                - minimum
+              additionalProperties: false
+              properties:
+                maximum:
+                  description: DIN 6.7.7.4
+                  type: number
+                minimum:
+                  description: DIN 6.7.7.3
+                  type: number
+              type: object
+            minimumVoltage:
+              description: DIN 6.7.2.9
+              type: number
+            initialSelfDischarge:
+              description: DIN 6.7.4.6
+              type: number
+            expectedNumberOfCycles:
+              description: DIN 6.7.6.3
+              maximum: 9223372036854776000
+              minimum: 0
+              type: integer
+          type: object
+        batteryCondition:
+          description: DIN Cluster - Capacity energy and voltage, Internal Resistance
+          required:
+            - capacityFade
+            - internalResistanceIncrease
+          additionalProperties: false
+          properties:
+            capacityFade:
+              description: DIN 6.7.2.4 First lifecycle of the battery 0
+              required:
+                - capacityFadeValue
+                - lastUpdate
+              additionalProperties: false
+              properties:
+                capacityFadeValue:
+                  type: number
+                lastUpdate:
+                  type: string
+                  format: date-time
+              type: object
+            internalResistanceIncrease:
+              items:
+                description: DIN 6.7.5.3 First lifecycle of the battery 0
+                required:
+                  - lastUpdateInternalResistanceIncrease
+                  - batteryComponent
+                  - internalResistanceIncreaseValue
+                additionalProperties: false
+                properties:
+                  lastUpdateInternalResistanceIncrease:
+                    type: string
+                    format: date-time
+                  batteryComponent:
+                    type: string
+                  internalResistanceIncreaseValue:
+                    type: number
+                type: object
+              minItems: 1
+              type: array
+          type: object
+      type: object
+    DynamicUpdate:
+      required:
+        - lastUpdate
+        - generalProductInformation
+        - performance
+      additionalProperties: false
+      properties:
+        lastUpdate:
+          type: string
+          format: date-time
+        generalProductInformation:
+          description: DIN Cluster - Identifiers and product data
+          required:
+            - batteryStatus
+            - operatorInformation
+          additionalProperties: false
+          properties:
+            batteryStatus:
+              description: DIN 6.1.3.7
+              type: string
+            operatorInformation:
+              required:
+                - identifier
+              additionalProperties: false
+              properties:
+                identifier:
+                  type: string
+              type: object
+          type: object
+        performance:
+          $ref: '#/components/schemas/Performance'
+      type: object
+    HazardousSubstance:
+      description: DIN 6.5.5, 6.5.6
+      required:
+        - hazardousSubstanceIdentifier
+        - hazardousSubstanceImpact
+        - hazardousSubstanceLocation
+      additionalProperties: false
+      properties:
+        hazardousSubstanceIdentifier:
+          type: string
+        hazardousSubstanceImpact:
+          items:
+            type: string
+          minItems: 1
+          type: array
+        hazardousSubstanceLocation:
+          required:
+            - componentName
+          additionalProperties: false
+          properties:
+            componentName:
+              type: string
+          type: object
+      type: object
+    BatteryMaterial:
+      description: Each object = different material DIN 6.5.3, 6.5.4
+      required:
+        - batteryMaterial
+        - batteryMaterialLocation
+        - isCriticalRawMaterial
+      additionalProperties: false
+      properties:
+        batteryMaterial:
+          type: string
+        batteryMaterialLocation:
+          items:
+            description: Anode/Cathode/Electrolyte
+            required:
+              - componentName
+            additionalProperties: false
+            properties:
+              componentName:
+                type: string
+            type: object
+          minItems: 1
+          type: array
+        isCriticalRawMaterial:
+          description: DIN 6.5.3 - boolean
+          type: boolean
+      type: object
+    MaterialComposition:
+      description: DIN Cluster - Material and composition
+      required:
+        - batteryChemistry
+        - hazardousSubstances
+        - batteryMaterials
+      additionalProperties: false
+      properties:
+        batteryChemistry:
+          description: DIN 6.5.2
+          required:
+            - shortName
+          additionalProperties: false
+          properties:
+            shortName:
+              type: string
+            clearName:
+              type: string
+          type: object
+        hazardousSubstances:
+          description: |-
+            DIN 6.5.5, 6.5.6
+             Each object = different hazardous substance
+          items:
+            $ref: '#/components/schemas/HazardousSubstance'
+          minItems: 1
+          type: array
+        batteryMaterials:
+          description: Each object = different material DIN 6.5.3, 6.5.4
+          items:
+            $ref: '#/components/schemas/BatteryMaterial'
+          minItems: 1
+          type: array
+      type: object
+    Circularity:
+      description: DIN Cluster - Circularity, Recycled content, Waste prevention
+      required:
+        - renewableContent
+        - recycledContent
+        - sparePartSources
+        - endOfLifeInformation
+      additionalProperties: false
+      properties:
+        renewableContent:
+          description: DIN 6.6.2.11
+          type: number
+        recycledContent:
+          items:
+            description: |-
+              Each object = cobalt / lithium / nickel / lead 
+              DIN cluster - Recycled content
+            required:
+              - postConsumerShare
+              - recycledMaterial
+              - preConsumerShare
+            additionalProperties: false
+            properties:
+              postConsumerShare:
+                type: number
+              recycledMaterial:
+                type: string
+              preConsumerShare:
+                type: number
+            type: object
+          maxItems: 4
+          minItems: 4
+          type: array
+        sparePartSources:
+          items:
+            description: DIN 6.6.1.4
+            additionalProperties: false
+            properties:
+              nameOfSupplier:
+                type: string
+              components:
+                items:
+                  required:
+                    - partName
+                  additionalProperties: false
+                  properties:
+                    partName:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          minItems: 1
+          type: array
+        endOfLifeInformation:
+          description: DIN cluster - Waste prevention
+          required:
+            - informationOnCollection
+            - wastePrevention
+            - separateCollection
+          additionalProperties: false
+          properties:
+            informationOnCollection:
+              description: DIN 6.6.3.4
+              type: string
+            wastePrevention:
+              description: DIN 6.6.3.2
+              type: string
+            separateCollection:
+              description: DIN 6.6.3.3
+              type: string
+          type: object
+      type: object
+    SupplyChainDueDiligence:
+      description: DIN Cluster - Supply chain due diligence
+      required:
+        - supplyChainDueDiligenceReport
+        - supplyChainIndices
+        - thirdPartyAssurances
+      additionalProperties: false
+      properties:
+        supplyChainDueDiligenceReport:
+          description: DIN 6.4.2
+          type: string
+        supplyChainIndices:
+          description: DIN 6.4.3
+          type: number
+        thirdPartyAssurances:
+          description: DIN 6.4.3
+          type: string
+      type: object
+    CarbonFootprint:
+      description: DIN Cluster - Carbon Footprint
+      required:
+        - carbonFootprintPerformanceClass
+        - carbonFootprintStudy
+        - batteryCarbonFootprint
+        - carbonFootprintPerLifecycleStage
+      additionalProperties: false
+      properties:
+        absoluteCarbonFootprint:
+          description: DIN 6.3.10
+          type: number
+        carbonFootprintPerformanceClass:
+          description: DIN 6.3.7
+          type: string
+        carbonFootprintStudy:
+          description: DIN 6.3.8
+          type: string
+        batteryCarbonFootprint:
+          description: DIN 6.3.2
+          type: number
+        carbonFootprintPerLifecycleStage:
+          description: DIN 6.3.3, 6.3.4, 6.3.5, 6.3.6
+          required:
+            - carbonFootprintPerLifecycleStage1
+          additionalProperties: false
+          properties:
+            carbonFootprintPerLifecycleStage1:
+              items:
+                required:
+                  - carbonFootprint
+                  - lifecycleStage
+                additionalProperties: false
+                properties:
+                  carbonFootprint:
+                    type: number
+                  lifecycleStage:
+                    description: |-
+                      Options: 
+                      1. raw material acquisition and pre-processing 
+                      2. main product production/manufacturing3. distribution 
+                      4. end of life and recycling
+                    type: string
+                type: object
+              minItems: 1
+              type: array
+          type: object
+      type: object
+    GeneralProductInformation:
+      description: DIN Cluster - Identifiers and product data
+      required:
+        - manufacturerInformation
+        - puttingIntoService
+        - manufacturingDate
+        - batteryMass
+        - manufacturingPlace
+        - productIdentifier
+        - warrantyPeriod
+        - batteryCategory
+      additionalProperties: false
+      properties:
+        manufacturerInformation:
+          description: DIN 6.1.2.4
+          required:
+            - identifier
+          additionalProperties: false
+          properties:
+            identifier:
+              type: string
+          type: object
+        puttingIntoService:
+          description: DIN 6.1.3.3
+          type: string
+          format: date-time
+        manufacturingDate:
+          description: DIN 6.1.3.2
+          type: string
+          format: date-time
+        operatorInformation:
+          description: DIN 6.1.2.3
+          required:
+            - identifier
+          additionalProperties: false
+          properties:
+            identifier:
+              type: string
+          type: object
+        batteryMass:
+          description: DIN 6.1.3.6
+          type: number
+        manufacturingPlace:
+          description: DIN 6.1.3.1
+          required:
+            - postalCode1
+          additionalProperties: false
+          properties:
+            postalCode1:
+              type: string
+          type: object
+        productIdentifier:
+          description: DIN 6.1.2.2
+          type: string
+        warrantyPeriod:
+          description: DIN 6.1.3.4
+          type: string
+        batteryCategory:
+          description: DIN 6.1.3.5
+          type: string
+        batteryPassportIdentifier:
+          description: DIN 6.1.2.1
+          type: string
+      type: object
+    Labeling:
+      description: DIN Cluster - Symbols and conformity
+      required:
+        - resultOfTestReport
+        - declarationOfConformity
+        - labels
+      additionalProperties: false
+      properties:
+        resultOfTestReport:
+          description: DIN 6.2.8
+          type: string
+        declarationOfConformity:
+          description: DIN 6.2.7
+          type: string
+        labels:
+          items:
+            description: |-
+              DIN 6.2.2, DIN 6.2.3, DIN 6.2.4, DIN 6.2.5 
+              Each separate requirement - separate label class  instantiation
+            required:
+              - labelingMeaning
+              - labelingSymbol
+              - labelingSubject
+            additionalProperties: false
+            properties:
+              labelingMeaning:
+                description: DIN 6.2.6
+                type: string
+                format: uri-reference
+              labelingSymbol:
+                description: DIN 6.2.6
+                type: string
+              labelingSubject:
+                type: string
+            type: object
+          minItems: 4
+          type: array
+      type: object
+    DigitalBatteryPassport:
+      title: Digital Battery Passport
+      required:
+        - materialComposition
+        - circularity
+        - supplyChainDueDiligence
+        - performance
+        - carbonFootprint
+        - generalProductInformation
+        - labeling
+      additionalProperties: false
+      properties:
+        materialComposition:
+          $ref: '#/components/schemas/MaterialComposition'
+        circularity:
+          $ref: '#/components/schemas/Circularity'
+        supplyChainDueDiligence:
+          $ref: '#/components/schemas/SupplyChainDueDiligence'
+        performance:
+          $ref: '#/components/schemas/Performance'
+        dynamicUpdates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicUpdate'
+          minItems: 1
+        carbonFootprint:
+          $ref: '#/components/schemas/CarbonFootprint'
+        generalProductInformation:
+          $ref: '#/components/schemas/GeneralProductInformation'
+        labeling:
+          $ref: '#/components/schemas/Labeling'
+      type: object
+  responses:
+    '200':
+      description: OK
+    '201':
+      description: Created
+    '202':
+      description: Accepted
+    '400':
+      description: Bad request.
+    '401':
+      description: Authorization information is missing or invalid.
+    '404':
+      description: A user with the specified ID or API-key was not found.
+    5XX:
+      description: Unexpected error.
+  securitySchemes:
+    api-key:
+      type: apiKey
+      in: header
+      name: X-API-Key
