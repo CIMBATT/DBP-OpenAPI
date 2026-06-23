@@ -27,7 +27,7 @@ info:
 security:
   - api-key: []
 paths:
-  /DBP:
+  /dbp:
     post:
       security:
         - api-key: []
@@ -64,7 +64,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-  /DBP/{resourceId}:
+  /dbp/{resourceId}:
     get:
       tags:
         - DigitalBatteryPassport
@@ -142,7 +142,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-  /DBP/{resourceId}/dynamicdata:
+  /dbp/{resourceId}/dynamicdata:
     put:
       security:
         - api-key: []
@@ -220,7 +220,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-  /DBP/{resourceId}/performance:
+  /dbp/{resourceId}/performance:
     get:
       tags:
         - DigitalBatteryPassport
