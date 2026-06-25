@@ -1,0 +1,1273 @@
+openapi: 3.0.0
+info:
+  title: Digital Battery Passport
+  version: '0.1'
+  description: |
+    This OpenAPI specification describes the DBP Back Office API that needs to be implemented and coupled to the Back Office data storage. 
+    There are 3 kinds of DBP's and endpoints are defined for each):
+    1. Public Information Tier: 
+      - Visible to everyone (consumers, general public) via a QR code scan. 
+      - Battery ID & Model: Manufacturer name, battery type, and manufacturing facility. 
+      - Performance & Durability: Expected life cycle, capacity, and power. 
+      - Environmental Impact: Carbon footprint (per kWh of energy delivered), recycled content percentage, and renewable content share. 
+      - Regulatory Compliance: CE mark, EU declaration of conformity.
+    
+    2. Parties with Legitimate Interest Tier (Restricted Access):
+      - Accessible to specific, authorized entities, such as independent repairers, remanufacturers, repurposing operators, and recyclers. 
+      - On top of the tier 1 data, the following data must be available to this tier:
+          - Detailed Composition: Information on cathode, anode, and electrolyte materials. 
+          - Dismantling & Safety: Disassembly instructions, exploded diagrams, and safety guidelines. 
+          - Live Data: Current State of Health (SoH) and usage/charging history. 
+    
+    3. Regulatory Data Tier (Strictly Confidential). 
+      - Accessible only by public authoritie, such as the European Commission, national market surveillance authorities, and notified bodies):  
+      - Audit Documentation: Detailed evidence of regulatory compliance. 
+      - Testing Results: Full technical documentation and test reports. 
+      - Proprietary Data: Highly sensitive material composition or manufacturing process data not required for safe handling, but necessary for regulatory validation.
+security:
+  - api-key: []
+paths:
+  /dbp/{resourceId}:
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: Retrieve a resource of type rootElement by id.
+      description: Retrieve a resource of type rootElement by id.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get a Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server
+  /dbp/{resourceId}/dynamicupdate:
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: request get the dynamic data of a specific battery.
+      description: request get the performance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /dbp/{resourceId}/performance:
+    get:
+      tags:
+        - DigitalBatteryPassport
+      summary: request get the performance data of a specific battery.
+      description: request get the performance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/register:
+    post:
+      tags:
+        - Back Office API registration
+      summary: >-
+        Register the Back Office API , where the DBP data can be collected, will
+        overwrite existing API registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BORegistration'
+      responses:
+        '201':
+          description: registered successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+        - Back Office API registration
+      summary: Get the current back office registration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BORegistration'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+components:
+  schemas:
+    BORegistration:
+      required:
+        - boURL
+      type: object
+      properties:
+        boURL:
+          type: string
+          format: URI
+        username:
+          type: string
+        password:
+          type: string
+        apiKey:
+          type: string
+      example:
+        password: password
+        apiKey: apiKey
+        boURL: boURL
+        username: username
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    CreateDigitalBatteryPassportResponse:
+      required:
+        - DBPId
+      type: object
+      properties:
+        DBPId:
+          type: string
+      example:
+        DBPId: DBPId
+    Performance:
+      required:
+        - batteryCondition
+        - batteryTechnicalProperties
+      type: object
+      properties:
+        batteryTechnicalProperties:
+          $ref: "#/components/schemas/Performance_batteryTechnicalProperties"
+        batteryCondition:
+          $ref: "#/components/schemas/Performance_batteryCondition"
+      additionalProperties: false
+      description: "DIN Cluster - Capacity energy and voltage, Power capability, Energy\
+        \ efficiency, Internal resistance, Battery lifetime, Temperature conditions"
+      example:
+        batteryCondition:
+          internalResistanceIncrease:
+            - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+              batteryComponent: batteryComponent
+              internalResistanceIncreaseValue: 6.965117697638846
+            - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+              batteryComponent: batteryComponent
+              internalResistanceIncreaseValue: 6.965117697638846
+          capacityFade:
+            capacityFadeValue: 3.5571952270680973
+            lastUpdate: 2000-01-23T04:56:07.000+00:00
+        batteryTechnicalProperties:
+          originalPowerCapability:
+            - powerCapabilityAt: 9.301444243932576
+              atSoC: 3.616076749251911
+            - powerCapabilityAt: 9.301444243932576
+              atSoC: 3.616076749251911
+          roundTripEfficiencyat50PerCentCycleLife: 4.965218492984954
+          maximumVoltage: 6.84685269835264
+          ratedEnergy: 7.457744773683766
+          expectedLifetime: -26052
+          ratedMaximumPower: 5.025004791520295
+          capacityThresholdForExhaustion: 4.145608029883936
+          lifetimeReferenceTest: lifetimeReferenceTest
+          temperatureRangeIdleState:
+            maximum: 9.369310271410669
+            minimum: 6.683562403749608
+          ratedCapacity: 2.027123023002322
+          nominalVoltage: 7.386281948385884
+          minimumVoltage: 8.762042012749001
+          roundTripEfficiencyFade: 5.637376656633329
+          powerFade: 1.4894159098541704
+          initialSelfDischarge: 9.018348186070783
+          cRate: 2.3021358869347655
+          initialInternalResistance:
+            - ohmicResistance: 7.061401241503109
+              batteryComponent: batteryComponent
+            - ohmicResistance: 7.061401241503109
+              batteryComponent: batteryComponent
+          cRateLifeCycleTest: 1.1730742509559433
+          roundtripEfficiency: 9.965781217890562
+          powerCapabilityRatio: 1.2315135367772556
+          expectedNumberOfCycles: 2147483647
+    DynamicUpdate:
+      required:
+        - generalProductInformation
+        - lastUpdate
+        - performance
+      type: object
+      properties:
+        lastUpdate:
+          type: string
+          format: date-time
+        generalProductInformation:
+          $ref: "#/components/schemas/DynamicUpdate_generalProductInformation"
+        performance:
+          $ref: "#/components/schemas/Performance"
+      additionalProperties: false
+      example:
+        generalProductInformation:
+          operatorInformation:
+            identifier: identifier
+          batteryStatus: batteryStatus
+        performance: null
+        lastUpdate: 2000-01-23T04:56:07.000+00:00
+    HazardousSubstance:
+      required:
+        - hazardousSubstanceIdentifier
+        - hazardousSubstanceImpact
+        - hazardousSubstanceLocation
+      type: object
+      properties:
+        hazardousSubstanceIdentifier:
+          type: string
+        hazardousSubstanceImpact:
+          minItems: 1
+          type: array
+          items:
+            type: string
+        hazardousSubstanceLocation:
+          $ref: "#/components/schemas/HazardousSubstance_hazardousSubstanceLocation"
+      additionalProperties: false
+      description: "DIN 6.5.5, 6.5.6"
+      example:
+        hazardousSubstanceIdentifier: hazardousSubstanceIdentifier
+        hazardousSubstanceImpact:
+          - hazardousSubstanceImpact
+          - hazardousSubstanceImpact
+        hazardousSubstanceLocation:
+          componentName: componentName
+    BatteryMaterial:
+      required:
+        - batteryMaterial
+        - batteryMaterialLocation
+        - isCriticalRawMaterial
+      type: object
+      properties:
+        batteryMaterial:
+          type: string
+        batteryMaterialLocation:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/BatteryMaterial_batteryMaterialLocation"
+        isCriticalRawMaterial:
+          type: boolean
+          description: DIN 6.5.3 - boolean
+      additionalProperties: false
+      description: "Each object = different material DIN 6.5.3, 6.5.4"
+      example:
+        batteryMaterialLocation:
+          - componentName: componentName
+          - componentName: componentName
+        isCriticalRawMaterial: true
+        batteryMaterial: batteryMaterial
+    MaterialComposition:
+      required:
+        - batteryChemistry
+        - batteryMaterials
+        - hazardousSubstances
+      type: object
+      properties:
+        batteryChemistry:
+          $ref: "#/components/schemas/MaterialComposition_batteryChemistry"
+        hazardousSubstances:
+          minItems: 1
+          type: array
+          description: |-
+            DIN 6.5.5, 6.5.6
+             Each object = different hazardous substance
+          items:
+            $ref: "#/components/schemas/HazardousSubstance"
+        batteryMaterials:
+          minItems: 1
+          type: array
+          description: "Each object = different material DIN 6.5.3, 6.5.4"
+          items:
+            $ref: "#/components/schemas/BatteryMaterial"
+      additionalProperties: false
+      description: DIN Cluster - Material and composition
+      example:
+        hazardousSubstances:
+          - hazardousSubstanceIdentifier: hazardousSubstanceIdentifier
+            hazardousSubstanceImpact:
+              - hazardousSubstanceImpact
+              - hazardousSubstanceImpact
+            hazardousSubstanceLocation:
+              componentName: componentName
+          - hazardousSubstanceIdentifier: hazardousSubstanceIdentifier
+            hazardousSubstanceImpact:
+              - hazardousSubstanceImpact
+              - hazardousSubstanceImpact
+            hazardousSubstanceLocation:
+              componentName: componentName
+        batteryChemistry:
+          clearName: clearName
+          shortName: shortName
+        batteryMaterials:
+          - batteryMaterialLocation:
+              - componentName: componentName
+              - componentName: componentName
+            isCriticalRawMaterial: true
+            batteryMaterial: batteryMaterial
+          - batteryMaterialLocation:
+              - componentName: componentName
+              - componentName: componentName
+            isCriticalRawMaterial: true
+            batteryMaterial: batteryMaterial
+    Circularity:
+      required:
+        - endOfLifeInformation
+        - recycledContent
+        - renewableContent
+        - sparePartSources
+      type: object
+      properties:
+        renewableContent:
+          type: number
+          description: DIN 6.6.2.11
+        recycledContent:
+          maxItems: 4
+          minItems: 4
+          type: array
+          items:
+            $ref: "#/components/schemas/Circularity_recycledContent"
+        sparePartSources:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/Circularity_sparePartSources"
+        endOfLifeInformation:
+          $ref: "#/components/schemas/Circularity_endOfLifeInformation"
+      additionalProperties: false
+      description: "DIN Cluster - Circularity, Recycled content, Waste prevention"
+      example:
+        renewableContent: 0.8008281904610115
+        recycledContent:
+          - recycledMaterial: recycledMaterial
+            postConsumerShare: 6.027456183070403
+            preConsumerShare: 1.4658129805029452
+          - recycledMaterial: recycledMaterial
+            postConsumerShare: 6.027456183070403
+            preConsumerShare: 1.4658129805029452
+          - recycledMaterial: recycledMaterial
+            postConsumerShare: 6.027456183070403
+            preConsumerShare: 1.4658129805029452
+          - recycledMaterial: recycledMaterial
+            postConsumerShare: 6.027456183070403
+            preConsumerShare: 1.4658129805029452
+        endOfLifeInformation:
+          wastePrevention: wastePrevention
+          separateCollection: separateCollection
+          informationOnCollection: informationOnCollection
+        sparePartSources:
+          - components:
+              - partName: partName
+              - partName: partName
+            nameOfSupplier: nameOfSupplier
+          - components:
+              - partName: partName
+              - partName: partName
+            nameOfSupplier: nameOfSupplier
+    SupplyChainDueDiligence:
+      required:
+        - supplyChainDueDiligenceReport
+        - supplyChainIndices
+        - thirdPartyAssurances
+      type: object
+      properties:
+        supplyChainDueDiligenceReport:
+          type: string
+          description: DIN 6.4.2
+        supplyChainIndices:
+          type: number
+          description: DIN 6.4.3
+        thirdPartyAssurances:
+          type: string
+          description: DIN 6.4.3
+      additionalProperties: false
+      description: DIN Cluster - Supply chain due diligence
+      example:
+        supplyChainDueDiligenceReport: supplyChainDueDiligenceReport
+        supplyChainIndices: 5.962133916683182
+        thirdPartyAssurances: thirdPartyAssurances
+    CarbonFootprint:
+      required:
+        - batteryCarbonFootprint
+        - carbonFootprintPerLifecycleStage
+        - carbonFootprintPerformanceClass
+        - carbonFootprintStudy
+      type: object
+      properties:
+        absoluteCarbonFootprint:
+          type: number
+          description: DIN 6.3.10
+        carbonFootprintPerformanceClass:
+          type: string
+          description: DIN 6.3.7
+        carbonFootprintStudy:
+          type: string
+          description: DIN 6.3.8
+        batteryCarbonFootprint:
+          type: number
+          description: DIN 6.3.2
+        carbonFootprintPerLifecycleStage:
+          $ref: "#/components/schemas/CarbonFootprint_carbonFootprintPerLifecycleStage"
+      additionalProperties: false
+      description: DIN Cluster - Carbon Footprint
+      example:
+        absoluteCarbonFootprint: 1.284659006116532
+        carbonFootprintStudy: carbonFootprintStudy
+        carbonFootprintPerformanceClass: carbonFootprintPerformanceClass
+        carbonFootprintPerLifecycleStage:
+          carbonFootprintPerLifecycleStage1:
+            - lifecycleStage: lifecycleStage
+              carbonFootprint: 6.778324963048013
+            - lifecycleStage: lifecycleStage
+              carbonFootprint: 6.778324963048013
+        batteryCarbonFootprint: 2.8841621266687802
+    GeneralProductInformation:
+      required:
+        - batteryCategory
+        - batteryMass
+        - manufacturerInformation
+        - manufacturingDate
+        - manufacturingPlace
+        - productIdentifier
+        - puttingIntoService
+        - warrantyPeriod
+      type: object
+      properties:
+        manufacturerInformation:
+          $ref: "#/components/schemas/GeneralProductInformation_manufacturerInformation"
+        puttingIntoService:
+          type: string
+          description: DIN 6.1.3.3
+          format: date-time
+        manufacturingDate:
+          type: string
+          description: DIN 6.1.3.2
+          format: date-time
+        operatorInformation:
+          $ref: "#/components/schemas/GeneralProductInformation_operatorInformation"
+        batteryMass:
+          type: number
+          description: DIN 6.1.3.6
+        manufacturingPlace:
+          $ref: "#/components/schemas/GeneralProductInformation_manufacturingPlace"
+        productIdentifier:
+          type: string
+          description: DIN 6.1.2.2
+        warrantyPeriod:
+          type: string
+          description: DIN 6.1.3.4
+        batteryCategory:
+          type: string
+          description: DIN 6.1.3.5
+        batteryPassportIdentifier:
+          type: string
+          description: DIN 6.1.2.1
+      additionalProperties: false
+      description: DIN Cluster - Identifiers and product data
+      example:
+        batteryCategory: batteryCategory
+        operatorInformation:
+          identifier: identifier
+        warrantyPeriod: warrantyPeriod
+        productIdentifier: productIdentifier
+        puttingIntoService: 2000-01-23T04:56:07.000+00:00
+        batteryMass: 6.878052220127876
+        manufacturingDate: 2000-01-23T04:56:07.000+00:00
+        batteryPassportIdentifier: batteryPassportIdentifier
+        manufacturerInformation:
+          identifier: identifier
+        manufacturingPlace:
+          postalCode1: postalCode1
+    Labeling:
+      required:
+        - declarationOfConformity
+        - labels
+        - resultOfTestReport
+      type: object
+      properties:
+        resultOfTestReport:
+          type: string
+          description: DIN 6.2.8
+        declarationOfConformity:
+          type: string
+          description: DIN 6.2.7
+        labels:
+          minItems: 4
+          type: array
+          items:
+            $ref: "#/components/schemas/Labeling_labels"
+      additionalProperties: false
+      description: DIN Cluster - Symbols and conformity
+      example:
+        resultOfTestReport: resultOfTestReport
+        declarationOfConformity: declarationOfConformity
+        labels:
+          - labelingMeaning: labelingMeaning
+            labelingSymbol: labelingSymbol
+            labelingSubject: labelingSubject
+          - labelingMeaning: labelingMeaning
+            labelingSymbol: labelingSymbol
+            labelingSubject: labelingSubject
+    DigitalBatteryPassport:
+      title: Digital Battery Passport
+      required:
+        - carbonFootprint
+        - circularity
+        - generalProductInformation
+        - labeling
+        - materialComposition
+        - performance
+        - supplyChainDueDiligence
+      type: object
+      properties:
+        materialComposition:
+          $ref: "#/components/schemas/MaterialComposition"
+        circularity:
+          $ref: "#/components/schemas/Circularity"
+        supplyChainDueDiligence:
+          $ref: "#/components/schemas/SupplyChainDueDiligence"
+        performance:
+          $ref: "#/components/schemas/Performance"
+        dynamicUpdates:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/DynamicUpdate"
+        carbonFootprint:
+          $ref: "#/components/schemas/CarbonFootprint"
+        generalProductInformation:
+          $ref: "#/components/schemas/GeneralProductInformation"
+        labeling:
+          $ref: "#/components/schemas/Labeling"
+      additionalProperties: false
+      example:
+        circularity:
+          renewableContent: 0.8008281904610115
+          recycledContent:
+            - recycledMaterial: recycledMaterial
+              postConsumerShare: 6.027456183070403
+              preConsumerShare: 1.4658129805029452
+            - recycledMaterial: recycledMaterial
+              postConsumerShare: 6.027456183070403
+              preConsumerShare: 1.4658129805029452
+            - recycledMaterial: recycledMaterial
+              postConsumerShare: 6.027456183070403
+              preConsumerShare: 1.4658129805029452
+            - recycledMaterial: recycledMaterial
+              postConsumerShare: 6.027456183070403
+              preConsumerShare: 1.4658129805029452
+          endOfLifeInformation:
+            wastePrevention: wastePrevention
+            separateCollection: separateCollection
+            informationOnCollection: informationOnCollection
+          sparePartSources:
+            - components:
+                - partName: partName
+                - partName: partName
+              nameOfSupplier: nameOfSupplier
+            - components:
+                - partName: partName
+                - partName: partName
+              nameOfSupplier: nameOfSupplier
+        generalProductInformation:
+          batteryCategory: batteryCategory
+          operatorInformation:
+            identifier: identifier
+          warrantyPeriod: warrantyPeriod
+          productIdentifier: productIdentifier
+          puttingIntoService: 2000-01-23T04:56:07.000+00:00
+          batteryMass: 6.878052220127876
+          manufacturingDate: 2000-01-23T04:56:07.000+00:00
+          batteryPassportIdentifier: batteryPassportIdentifier
+          manufacturerInformation:
+            identifier: identifier
+          manufacturingPlace:
+            postalCode1: postalCode1
+        performance:
+          batteryCondition:
+            internalResistanceIncrease:
+              - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+                batteryComponent: batteryComponent
+                internalResistanceIncreaseValue: 6.965117697638846
+              - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+                batteryComponent: batteryComponent
+                internalResistanceIncreaseValue: 6.965117697638846
+            capacityFade:
+              capacityFadeValue: 3.5571952270680973
+              lastUpdate: 2000-01-23T04:56:07.000+00:00
+          batteryTechnicalProperties:
+            originalPowerCapability:
+              - powerCapabilityAt: 9.301444243932576
+                atSoC: 3.616076749251911
+              - powerCapabilityAt: 9.301444243932576
+                atSoC: 3.616076749251911
+            roundTripEfficiencyat50PerCentCycleLife: 4.965218492984954
+            maximumVoltage: 6.84685269835264
+            ratedEnergy: 7.457744773683766
+            expectedLifetime: -26052
+            ratedMaximumPower: 5.025004791520295
+            capacityThresholdForExhaustion: 4.145608029883936
+            lifetimeReferenceTest: lifetimeReferenceTest
+            temperatureRangeIdleState:
+              maximum: 9.369310271410669
+              minimum: 6.683562403749608
+            ratedCapacity: 2.027123023002322
+            nominalVoltage: 7.386281948385884
+            minimumVoltage: 8.762042012749001
+            roundTripEfficiencyFade: 5.637376656633329
+            powerFade: 1.4894159098541704
+            initialSelfDischarge: 9.018348186070783
+            cRate: 2.3021358869347655
+            initialInternalResistance:
+              - ohmicResistance: 7.061401241503109
+                batteryComponent: batteryComponent
+              - ohmicResistance: 7.061401241503109
+                batteryComponent: batteryComponent
+            cRateLifeCycleTest: 1.1730742509559433
+            roundtripEfficiency: 9.965781217890562
+            powerCapabilityRatio: 1.2315135367772556
+            expectedNumberOfCycles: 2147483647
+        dynamicUpdates:
+          - generalProductInformation:
+              operatorInformation:
+                identifier: identifier
+              batteryStatus: batteryStatus
+            performance: null
+            lastUpdate: 2000-01-23T04:56:07.000+00:00
+          - generalProductInformation:
+              operatorInformation:
+                identifier: identifier
+              batteryStatus: batteryStatus
+            performance: null
+            lastUpdate: 2000-01-23T04:56:07.000+00:00
+        carbonFootprint:
+          absoluteCarbonFootprint: 1.284659006116532
+          carbonFootprintStudy: carbonFootprintStudy
+          carbonFootprintPerformanceClass: carbonFootprintPerformanceClass
+          carbonFootprintPerLifecycleStage:
+            carbonFootprintPerLifecycleStage1:
+              - lifecycleStage: lifecycleStage
+                carbonFootprint: 6.778324963048013
+              - lifecycleStage: lifecycleStage
+                carbonFootprint: 6.778324963048013
+          batteryCarbonFootprint: 2.8841621266687802
+        labeling:
+          resultOfTestReport: resultOfTestReport
+          declarationOfConformity: declarationOfConformity
+          labels:
+            - labelingMeaning: labelingMeaning
+              labelingSymbol: labelingSymbol
+              labelingSubject: labelingSubject
+            - labelingMeaning: labelingMeaning
+              labelingSymbol: labelingSymbol
+              labelingSubject: labelingSubject
+        materialComposition:
+          hazardousSubstances:
+            - hazardousSubstanceIdentifier: hazardousSubstanceIdentifier
+              hazardousSubstanceImpact:
+                - hazardousSubstanceImpact
+                - hazardousSubstanceImpact
+              hazardousSubstanceLocation:
+                componentName: componentName
+            - hazardousSubstanceIdentifier: hazardousSubstanceIdentifier
+              hazardousSubstanceImpact:
+                - hazardousSubstanceImpact
+                - hazardousSubstanceImpact
+              hazardousSubstanceLocation:
+                componentName: componentName
+          batteryChemistry:
+            clearName: clearName
+            shortName: shortName
+          batteryMaterials:
+            - batteryMaterialLocation:
+                - componentName: componentName
+                - componentName: componentName
+              isCriticalRawMaterial: true
+              batteryMaterial: batteryMaterial
+            - batteryMaterialLocation:
+                - componentName: componentName
+                - componentName: componentName
+              isCriticalRawMaterial: true
+              batteryMaterial: batteryMaterial
+        supplyChainDueDiligence:
+          supplyChainDueDiligenceReport: supplyChainDueDiligenceReport
+          supplyChainIndices: 5.962133916683182
+          thirdPartyAssurances: thirdPartyAssurances
+    Performance_batteryTechnicalProperties_initialInternalResistance:
+      required:
+        - batteryComponent
+        - ohmicResistance
+      type: object
+      properties:
+        batteryComponent:
+          type: string
+          description: cell / pack
+        ohmicResistance:
+          type: number
+      additionalProperties: false
+      description: DIN 6.7.5.2
+      example:
+        ohmicResistance: 7.061401241503109
+        batteryComponent: batteryComponent
+    Performance_batteryTechnicalProperties_originalPowerCapability:
+      required:
+        - atSoC
+        - powerCapabilityAt
+      type: object
+      properties:
+        powerCapabilityAt:
+          type: number
+        atSoC:
+          type: number
+      additionalProperties: false
+      description: DIN 6.7.3.2
+      example:
+        powerCapabilityAt: 9.301444243932576
+        atSoC: 3.616076749251911
+    Performance_batteryTechnicalProperties_temperatureRangeIdleState:
+      required:
+        - maximum
+        - minimum
+      type: object
+      properties:
+        maximum:
+          type: number
+          description: DIN 6.7.7.4
+        minimum:
+          type: number
+          description: DIN 6.7.7.3
+      additionalProperties: false
+      description: "DIN 6.7.7.3, 6.7.7.4"
+      example:
+        maximum: 9.369310271410669
+        minimum: 6.683562403749608
+    Performance_batteryTechnicalProperties:
+      required:
+        - cRate
+        - cRateLifeCycleTest
+        - capacityThresholdForExhaustion
+        - expectedLifetime
+        - expectedNumberOfCycles
+        - initialInternalResistance
+        - lifetimeReferenceTest
+        - maximumVoltage
+        - minimumVoltage
+        - nominalVoltage
+        - originalPowerCapability
+        - powerFade
+        - ratedCapacity
+        - ratedMaximumPower
+        - roundTripEfficiencyFade
+        - roundTripEfficiencyat50PerCentCycleLife
+        - roundtripEfficiency
+        - temperatureRangeIdleState
+      type: object
+      properties:
+        roundTripEfficiencyFade:
+          type: number
+          description: DIN 6.7.4.5
+        cRate:
+          type: number
+          description: DIN 6.7.6.6 (2)
+        initialInternalResistance:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/Performance_batteryTechnicalProperties_initialInternalResistance"
+        originalPowerCapability:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/Performance_batteryTechnicalProperties_originalPowerCapability"
+        ratedCapacity:
+          type: number
+          description: DIN 6.7.2.2
+        capacityThresholdForExhaustion:
+          type: number
+          description: DIN 6.7.6.9
+        nominalVoltage:
+          type: number
+          description: DIN 6.7.2.11
+        lifetimeReferenceTest:
+          type: string
+          description: DIN 6.7.6.5
+        powerCapabilityRatio:
+          type: number
+          description: DIN 6.7.3.6
+        expectedLifetime:
+          maximum: 32767
+          minimum: -32768
+          type: integer
+          description: DIN 6.7.6.2
+        powerFade:
+          type: number
+          description: DIN 6.7.3.4
+        maximumVoltage:
+          type: number
+          description: DIN 6.7.2.10
+        ratedEnergy:
+          type: number
+          description: DIN 6.7.2.5
+        cRateLifeCycleTest:
+          type: number
+          description: DIN 6.7.6.6 (1)
+        roundTripEfficiencyat50PerCentCycleLife:
+          type: number
+          description: DIN 6.7.4.3
+        ratedMaximumPower:
+          type: number
+          description: DIN 6.7.3.3
+        roundtripEfficiency:
+          type: number
+          description: DIN 6.7.4.2
+        temperatureRangeIdleState:
+          $ref: "#/components/schemas/Performance_batteryTechnicalProperties_temperatureRangeIdleState"
+        minimumVoltage:
+          type: number
+          description: DIN 6.7.2.9
+        initialSelfDischarge:
+          type: number
+          description: DIN 6.7.4.6
+        expectedNumberOfCycles:
+          maximum: 9223372036854776000
+          minimum: 0
+          type: integer
+          description: DIN 6.7.6.3
+      additionalProperties: false
+      example:
+        originalPowerCapability:
+          - powerCapabilityAt: 9.301444243932576
+            atSoC: 3.616076749251911
+          - powerCapabilityAt: 9.301444243932576
+            atSoC: 3.616076749251911
+        roundTripEfficiencyat50PerCentCycleLife: 4.965218492984954
+        maximumVoltage: 6.84685269835264
+        ratedEnergy: 7.457744773683766
+        expectedLifetime: -26052
+        ratedMaximumPower: 5.025004791520295
+        capacityThresholdForExhaustion: 4.145608029883936
+        lifetimeReferenceTest: lifetimeReferenceTest
+        temperatureRangeIdleState:
+          maximum: 9.369310271410669
+          minimum: 6.683562403749608
+        ratedCapacity: 2.027123023002322
+        nominalVoltage: 7.386281948385884
+        minimumVoltage: 8.762042012749001
+        roundTripEfficiencyFade: 5.637376656633329
+        powerFade: 1.4894159098541704
+        initialSelfDischarge: 9.018348186070783
+        cRate: 2.3021358869347655
+        initialInternalResistance:
+          - ohmicResistance: 7.061401241503109
+            batteryComponent: batteryComponent
+          - ohmicResistance: 7.061401241503109
+            batteryComponent: batteryComponent
+        cRateLifeCycleTest: 1.1730742509559433
+        roundtripEfficiency: 9.965781217890562
+        powerCapabilityRatio: 1.2315135367772556
+        expectedNumberOfCycles: 2147483647
+    Performance_batteryCondition_capacityFade:
+      required:
+        - capacityFadeValue
+        - lastUpdate
+      type: object
+      properties:
+        capacityFadeValue:
+          type: number
+        lastUpdate:
+          type: string
+          format: date-time
+      additionalProperties: false
+      description: DIN 6.7.2.4 First lifecycle of the battery 0
+      example:
+        capacityFadeValue: 3.5571952270680973
+        lastUpdate: 2000-01-23T04:56:07.000+00:00
+    Performance_batteryCondition_internalResistanceIncrease:
+      required:
+        - batteryComponent
+        - internalResistanceIncreaseValue
+        - lastUpdateInternalResistanceIncrease
+      type: object
+      properties:
+        lastUpdateInternalResistanceIncrease:
+          type: string
+          format: date-time
+        batteryComponent:
+          type: string
+        internalResistanceIncreaseValue:
+          type: number
+      additionalProperties: false
+      description: DIN 6.7.5.3 First lifecycle of the battery 0
+      example:
+        lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+        batteryComponent: batteryComponent
+        internalResistanceIncreaseValue: 6.965117697638846
+    Performance_batteryCondition:
+      required:
+        - capacityFade
+        - internalResistanceIncrease
+      type: object
+      properties:
+        capacityFade:
+          $ref: "#/components/schemas/Performance_batteryCondition_capacityFade"
+        internalResistanceIncrease:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/Performance_batteryCondition_internalResistanceIncrease"
+      additionalProperties: false
+      description: "DIN Cluster - Capacity energy and voltage, Internal Resistance"
+      example:
+        internalResistanceIncrease:
+          - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+            batteryComponent: batteryComponent
+            internalResistanceIncreaseValue: 6.965117697638846
+          - lastUpdateInternalResistanceIncrease: 2000-01-23T04:56:07.000+00:00
+            batteryComponent: batteryComponent
+            internalResistanceIncreaseValue: 6.965117697638846
+        capacityFade:
+          capacityFadeValue: 3.5571952270680973
+          lastUpdate: 2000-01-23T04:56:07.000+00:00
+    DynamicUpdate_generalProductInformation_operatorInformation:
+      required:
+        - identifier
+      type: object
+      properties:
+        identifier:
+          type: string
+      additionalProperties: false
+      example:
+        identifier: identifier
+    DynamicUpdate_generalProductInformation:
+      required:
+        - batteryStatus
+        - operatorInformation
+      type: object
+      properties:
+        batteryStatus:
+          type: string
+          description: DIN 6.1.3.7
+        operatorInformation:
+          $ref: "#/components/schemas/DynamicUpdate_generalProductInformation_operatorInformation"
+      additionalProperties: false
+      description: DIN Cluster - Identifiers and product data
+      example:
+        operatorInformation:
+          identifier: identifier
+        batteryStatus: batteryStatus
+    HazardousSubstance_hazardousSubstanceLocation:
+      required:
+        - componentName
+      type: object
+      properties:
+        componentName:
+          type: string
+      additionalProperties: false
+      example:
+        componentName: componentName
+    BatteryMaterial_batteryMaterialLocation:
+      required:
+        - componentName
+      type: object
+      properties:
+        componentName:
+          type: string
+      additionalProperties: false
+      description: Anode/Cathode/Electrolyte
+      example:
+        componentName: componentName
+    MaterialComposition_batteryChemistry:
+      required:
+        - shortName
+      type: object
+      properties:
+        shortName:
+          type: string
+        clearName:
+          type: string
+      additionalProperties: false
+      description: DIN 6.5.2
+      example:
+        clearName: clearName
+        shortName: shortName
+    Circularity_recycledContent:
+      required:
+        - postConsumerShare
+        - preConsumerShare
+        - recycledMaterial
+      type: object
+      properties:
+        postConsumerShare:
+          type: number
+        recycledMaterial:
+          type: string
+        preConsumerShare:
+          type: number
+      additionalProperties: false
+      description: "Each object = cobalt / lithium / nickel / lead \nDIN cluster -\
+        \ Recycled content"
+      example:
+        recycledMaterial: recycledMaterial
+        postConsumerShare: 6.027456183070403
+        preConsumerShare: 1.4658129805029452
+    Circularity_components:
+      required:
+        - partName
+      type: object
+      properties:
+        partName:
+          type: string
+      additionalProperties: false
+      example:
+        partName: partName
+    Circularity_sparePartSources:
+      type: object
+      properties:
+        nameOfSupplier:
+          type: string
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/Circularity_components"
+      additionalProperties: false
+      description: DIN 6.6.1.4
+      example:
+        components:
+          - partName: partName
+          - partName: partName
+        nameOfSupplier: nameOfSupplier
+    Circularity_endOfLifeInformation:
+      required:
+        - informationOnCollection
+        - separateCollection
+        - wastePrevention
+      type: object
+      properties:
+        informationOnCollection:
+          type: string
+          description: DIN 6.6.3.4
+        wastePrevention:
+          type: string
+          description: DIN 6.6.3.2
+        separateCollection:
+          type: string
+          description: DIN 6.6.3.3
+      additionalProperties: false
+      description: DIN cluster - Waste prevention
+      example:
+        wastePrevention: wastePrevention
+        separateCollection: separateCollection
+        informationOnCollection: informationOnCollection
+    CarbonFootprint_carbonFootprintPerLifecycleStage_carbonFootprintPerLifecycleStage1:
+      required:
+        - carbonFootprint
+        - lifecycleStage
+      type: object
+      properties:
+        carbonFootprint:
+          type: number
+        lifecycleStage:
+          type: string
+          description: "Options: \n1. raw material acquisition and pre-processing\
+            \ \n2. main product production/manufacturing3. distribution \n4. end of\
+            \ life and recycling"
+      additionalProperties: false
+      example:
+        lifecycleStage: lifecycleStage
+        carbonFootprint: 6.778324963048013
+    CarbonFootprint_carbonFootprintPerLifecycleStage:
+      required:
+        - carbonFootprintPerLifecycleStage1
+      type: object
+      properties:
+        carbonFootprintPerLifecycleStage1:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/CarbonFootprint_carbonFootprintPerLifecycleStage_carbonFootprintPerLifecycleStage1"
+      additionalProperties: false
+      description: "DIN 6.3.3, 6.3.4, 6.3.5, 6.3.6"
+      example:
+        carbonFootprintPerLifecycleStage1:
+          - lifecycleStage: lifecycleStage
+            carbonFootprint: 6.778324963048013
+          - lifecycleStage: lifecycleStage
+            carbonFootprint: 6.778324963048013
+    GeneralProductInformation_manufacturerInformation:
+      required:
+        - identifier
+      type: object
+      properties:
+        identifier:
+          type: string
+      additionalProperties: false
+      description: DIN 6.1.2.4
+      example:
+        identifier: identifier
+    GeneralProductInformation_operatorInformation:
+      required:
+        - identifier
+      type: object
+      properties:
+        identifier:
+          type: string
+      additionalProperties: false
+      description: DIN 6.1.2.3
+      example:
+        identifier: identifier
+    GeneralProductInformation_manufacturingPlace:
+      required:
+        - postalCode1
+      type: object
+      properties:
+        postalCode1:
+          type: string
+      additionalProperties: false
+      description: DIN 6.1.3.1
+      example:
+        postalCode1: postalCode1
+    Labeling_labels:
+      required:
+        - labelingMeaning
+        - labelingSubject
+        - labelingSymbol
+      type: object
+      properties:
+        labelingMeaning:
+          type: string
+          description: DIN 6.2.6
+          format: uri-reference
+        labelingSymbol:
+          type: string
+          description: DIN 6.2.6
+        labelingSubject:
+          type: string
+      additionalProperties: false
+      description: "DIN 6.2.2, DIN 6.2.3, DIN 6.2.4, DIN 6.2.5 \nEach separate requirement\
+        \ - separate label class  instantiation"
+      example:
+        labelingMeaning: labelingMeaning
+        labelingSymbol: labelingSymbol
+        labelingSubject: labelingSubject
+  responses:
+    "200":
+      description: OK
+    "201":
+      description: Created
+    "202":
+      description: Accepted
+    "400":
+      description: Bad request.
+    "401":
+      description: Authorization information is missing or invalid.
+    "404":
+      description: A user with the specified ID or API-key was not found.
+    "5XX":
+      description: Unexpected error.
+  securitySchemes:
+    api-key:
+      type: apiKey
+      name: X-API-Key
+      in: header
