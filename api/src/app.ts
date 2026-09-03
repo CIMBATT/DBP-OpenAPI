@@ -2,6 +2,8 @@ node dist/serverimport express, { type NextFunction, type Request, type Response
 import { API_KEY, boRegistration, passports } from './data';
 import type { BORegistration, DigitalBatteryPassport, Performance } from './types';
 import { apiError, notFound } from './utils';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 
@@ -144,6 +146,28 @@ app.post('/bo/dbp/t2/:resourceId/maintenance', (req, res) => {
 app.get('/bo/dbp/t3', (_req, res) => {
   const passport = passports.get('battery-003') ?? Object.values(passports)[0];
   res.json(passport ?? {});
+});
+
+// Serve OpenAPI specification (YAML)
+app.get('/openapi.yaml', (_req, res) => {
+  try {
+    const yamlPath = path.join(process.cwd(), 'OpenAPI', 'swagger', 'full_spec', 'openapi.yaml');
+    const content = fs.readFileSync(yamlPath, 'utf8');
+    res.type('application/yaml').send(content);
+  } catch (err) {
+    notFound(res, 'OpenAPI YAML specification not found.');
+  }
+});
+
+// Serve OpenAPI specification (JSON) if available
+app.get('/openapi.json', (_req, res) => {
+  try {
+    const jsonPath = path.join(process.cwd(), 'OpenAPI', 'swagger', 'full_spec', 'modification.json');
+    const content = fs.readFileSync(jsonPath, 'utf8');
+    res.type('application/json').send(JSON.parse(content));
+  } catch (err) {
+    notFound(res, 'OpenAPI JSON specification not found.');
+  }
 });
 
 app.use((req, res) => {
