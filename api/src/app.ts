@@ -1,4 +1,4 @@
-node dist/serverimport express, { type NextFunction, type Request, type Response } from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import { API_KEY, boRegistration, passports } from './data';
 import type { BORegistration, DigitalBatteryPassport, Performance } from './types';
 import { apiError, notFound } from './utils';
@@ -7,7 +7,24 @@ import path from 'path';
 
 const app = express();
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-api-key');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json({ limit: '1mb' }));
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.debug(`[${new Date().toISOString()}] Incoming request: ${req.method} ${req.originalUrl} from ${req.ip ?? 'unknown'}`);
+  next();
+});
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const providedApiKey =
@@ -29,7 +46,7 @@ app.get('/health', (_req, res) => {
 
 // Returns all available product identifiers (resource IDs)
 app.get('/dbp', (_req, res) => {
-  res.json(Array.from(passports.keys()));
+  res.json(Array.from(passports.keys(), (productIdentifier) => ({ productIdentifier })));
 });
 
 function getPassport(resourceId: string): DigitalBatteryPassport | undefined {
@@ -162,7 +179,7 @@ app.get('/openapi.yaml', (_req, res) => {
 // Serve OpenAPI specification (JSON) if available
 app.get('/openapi.json', (_req, res) => {
   try {
-    const jsonPath = path.join(process.cwd(), 'OpenAPI', 'swagger', 'full_spec', 'modification.json');
+    const jsonPath = path.join(process.cwd(), 'OpenAPI', 'swagger', 'full_spec');
     const content = fs.readFileSync(jsonPath, 'utf8');
     res.type('application/json').send(JSON.parse(content));
   } catch (err) {

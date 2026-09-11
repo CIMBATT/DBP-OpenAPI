@@ -1,117 +1,165 @@
 openapi: 3.0.0
 info:
   title: Digital Battery Passport
-  description: "This OpenAPI specification describes the DBP Back Office API that\
-    \ needs to be implemented and coupled to the Back Office data storage. \nThere\
-    \ are 3 kinds of DBP's and endpoints are defined for each):\n1. Public Information\
-    \ Tier: \n  - Visible to everyone (consumers, general public) via a QR code scan.\
-    \ \n  - Battery ID & Model: Manufacturer name, battery type, and manufacturing\
-    \ facility. \n  - Performance & Durability: Expected life cycle, capacity, and\
-    \ power. \n  - Environmental Impact: Carbon footprint (per kWh of energy delivered),\
-    \ recycled content percentage, and renewable content share. \n  - Regulatory Compliance:\
-    \ CE mark, EU declaration of conformity.\n\n2. Parties with Legitimate Interest\
-    \ Tier (Restricted Access):\n  - Accessible to specific, authorized entities,\
-    \ such as independent repairers, remanufacturers, repurposing operators, and recyclers.\
-    \ \n  - On top of the tier 1 data, the following data must be available to this\
-    \ tier:\n      - Detailed Composition: Information on cathode, anode, and electrolyte\
-    \ materials. \n      - Dismantling & Safety: Disassembly instructions, exploded\
-    \ diagrams, and safety guidelines. \n      - Live Data: Current State of Health\
-    \ (SoH) and usage/charging history. \n\n3. Regulatory Data Tier (Strictly Confidential).\
-    \ \n  - Accessible only by public authoritie, such as the European Commission,\
-    \ national market surveillance authorities, and notified bodies):  \n  - Audit\
-    \ Documentation: Detailed evidence of regulatory compliance. \n  - Testing Results:\
-    \ Full technical documentation and test reports. \n  - Proprietary Data: Highly\
-    \ sensitive material composition or manufacturing process data not required for\
-    \ safe handling, but necessary for regulatory validation.\n"
-  version: "0.1"
-servers:
-  - url: /
+  version: '0.1'
+  description: |
+    This OpenAPI specification describes the DBP Back Office API that needs to be implemented and coupled to the Back Office data storage. 
+    There are 3 kinds of DBP's and endpoints are defined for each):
+    1. Public Information Tier: 
+      - Visible to everyone (consumers, general public) via a QR code scan. 
+      - Battery ID & Model: Manufacturer name, battery type, and manufacturing facility. 
+      - Performance & Durability: Expected life cycle, capacity, and power. 
+      - Environmental Impact: Carbon footprint (per kWh of energy delivered), recycled content percentage, and renewable content share. 
+      - Regulatory Compliance: CE mark, EU declaration of conformity.
+    
+    2. Parties with Legitimate Interest Tier (Restricted Access):
+      - Accessible to specific, authorized entities, such as independent repairers, remanufacturers, repurposing operators, and recyclers. 
+      - On top of the tier 1 data, the following data must be available to this tier:
+          - Detailed Composition: Information on cathode, anode, and electrolyte materials. 
+          - Dismantling & Safety: Disassembly instructions, exploded diagrams, and safety guidelines. 
+          - Live Data: Current State of Health (SoH) and usage/charging history. 
+    
+    3. Regulatory Data Tier (Strictly Confidential). 
+      - Accessible only by public authoritie, such as the European Commission, national market surveillance authorities, and notified bodies):  
+      - Audit Documentation: Detailed evidence of regulatory compliance. 
+      - Testing Results: Full technical documentation and test reports. 
+      - Proprietary Data: Highly sensitive material composition or manufacturing process data not required for safe handling, but necessary for regulatory validation.
 security:
   - api-key: []
 paths:
-  /dbp:
+  /bo/dbp/:
     post:
+      security:
+        - api-key: []
       tags:
-        - DigitalBatteryPassport
-      summary: Create a public Digital Battery Passport.
+        - Back Office API DBP
+      summary: Create a resource of type DigitalBatteryPassport.
       description: Create a resource of type DigitalBatteryPassport.
-      operationId: dbpPOST
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DigitalBatteryPassport"
+              $ref: '#/components/schemas/DigitalBatteryPassport'
         required: true
       responses:
-        "201":
+        '201':
           description: Digital Battery Passport created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateDigitalBatteryPassportResponse"
-        "400":
+                $ref: '#/components/schemas/CreateDigitalBatteryPassportResponse'
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: provided API key is not valid
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: Not Found
-        "500":
+        '500':
           description: Internal Server Error
-      security:
-        - api-key: []
-      x-swagger-router-controller: DigitalBatteryPassport
-  /dbp/{resourceId}:
     get:
       tags:
-        - DigitalBatteryPassport
-      summary: Retrieve a public Digital Battery Passport by id.
-      description: Retrieve a resource of type rootElement by id.
-      operationId: dbpResourceIdGET
+        - Back Office API DBP
+      summary: Get a passport for Tier1 (public) access
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/dbp/t2:
+    get:
+      tags:
+        - Back Office API DBP
+      summary: Get a passport for Tier2 (Legitimate Access) access
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /bo/dbp/t2/{resourceId}/performance:
+    get:
+      tags:
+        - Back Office API DBP
+      summary: request get the performance data of a specific battery.
+      description: request get the performance data of a specific battery.
       parameters:
         - name: resourceId
           in: path
           required: true
-          style: simple
-          explode: false
           schema:
             type: string
       responses:
-        "200":
-          description: Get a Digital Battery Passport
+        '201':
+          description: Update Digital Battery Passport
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DigitalBatteryPassport"
-        "400":
+                $ref: '#/components/schemas/Performance'
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: provided API key is not valid
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: Not Found
-        "500":
-          description: Internal Server
-      x-swagger-router-controller: DigitalBatteryPassport
-    put:
+        '500':
+          description: Internal Server Error
+    post:
+      security:
+        - api-key: []
       tags:
-        - DigitalBatteryPassport
-      summary: >-
-        Fully update a DigitalBatteryPassport.
+        - Back Office API DBP
+      summary: update a resource of type rootElement or create it if it does not exist.
       description: >-
         Fully update a resource of type rootElement or create it if it does not
         exist.
@@ -149,198 +197,104 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-  /dbp/{resourceId}/dynamicdata:
+  /bo/dbp/t2/{resourceId}/maintenance:
     get:
       tags:
-        - DigitalBatteryPassport
-      summary: Retrieve the dynamic data of a specific battery.
-      description:  Retrieve the dynamic data of a specific battery.
+        - Back Office API DBP
+      summary: request maintenance data of a specific battery.
+      description: request maintenance data of a specific battery.
       parameters:
         - name: resourceId
           in: path
           required: true
-          style: simple
-          explode: false
           schema:
             type: string
       responses:
-        "201":
+        '201':
           description: Update Digital Battery Passport
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Performance"
-        "400":
+                $ref: '#/components/schemas/MaintenanceInformation'
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: provided API key is not valid
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: Not Found
-        "500":
+        '500':
           description: Internal Server Error
-      x-swagger-router-controller: DigitalBatteryPassport
     post:
       tags:
-        - DigitalBatteryPassport
-      summary: Add dynamic data to the digital passport.
-      description: Add dynamic data to the digital passort.
+        -  Back Office API DBP
+      summary: post a new maintencance event for a specific battery.
+      description: request maintenance data of a specific battery.
       parameters:
         - name: resourceId
           in: path
           required: true
-          style: simple
-          explode: false
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformation'
       responses:
-        "201":
-          description: Digital Battery Passport created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateDigitalBatteryPassportResponse"
-        "400":
+        '201':
+          description: registered successfully
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: provided API key is not valid
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: Not Found
-        "500":
+        '500':
           description: Internal Server Error
-      security:
-        - api-key: []
-      x-swagger-router-controller: DigitalBatteryPassport
-  /dbp/{resourceId}/performance:
+  /bo/dbp/t3:
     get:
       tags:
-        - DigitalBatteryPassport
-      summary:  Retrieve the performance data of a specific battery.
-      description: Retrieve the performance data of a specific battery.
-      operationId: dbpResourceIdPerformanceGET
-      parameters:
-        - name: resourceId
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
+        - Back Office API DBP
+      summary: Get a passport for Tier3 (Regulator) access
       responses:
-        "200":
-          description: successful
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Performance"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
-          description: provided API key is not valid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      x-swagger-router-controller: DigitalBatteryPassport
-  /dbp/{resourceId}/t2:
-    get:
-      tags:
-        - DigitalBatteryPassport
-      summary: Retrieve a public Digital Battery Passport for Tier2 (Legitimate Access) access
-      operationId: boDbpT2GET
-      parameters:
-        - name: resourceId
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DigitalBatteryPassport"
-        "400":
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: provided API key is not valid
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: Not Found
-        "500":
+        '500':
           description: Internal Server Error
-      x-swagger-router-controller: BackOfficeAPIDBP
-  /dbp/{resourceId}/t3:
-    get:
-      tags:
-        - DigitalBatteryPassport
-      summary: Retrieve a public Digital Battery Passport for Tier3 (Regulator) access
-      operationId: boDbpT3GET
-      parameters:
-        - name: resourceId
-          in: path
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DigitalBatteryPassport"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
-          description: provided API key is not valid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      x-swagger-router-controller: BackOfficeAPIDBP
 components:
   schemas:
     BORegistration:
@@ -614,6 +568,90 @@ components:
               - partName: partName
               - partName: partName
             nameOfSupplier: nameOfSupplier
+    MaintenanceInformation:
+      required:
+        - eventDate
+        - activityType
+        - modifications
+      minItems: 0
+      type: array
+      items:
+        properties:
+          eventDate:
+            type: string
+            format: date-time
+            description: DIN 6.6.2.11
+          activityType:
+            required:
+              - code
+              - definition
+            type: object
+            properties:
+              code:
+                type: string
+                description: DIN 6.6.2.11
+              definition:
+                type: string
+                description: DIN
+          modifications:
+            type: object
+            required:
+              - maintenanceInformation
+              - generalProductInformation
+              - circularity
+            description: DIN
+            properties:
+              maintenanceInformation:
+                type: string
+                description: (optional) operator information (identifier, type), activity - components (just as in the spare parts), type (repair/repurpose etc), date
+              generalProductInformation:
+                required:
+                  - operatorInformation
+                  - productIdentifier
+                type: object
+                additionalProperties: false
+                properties:
+                  operatorInformation:
+                    required:
+                      - identifier
+                    properties:
+                      identifier:
+                        type: string
+                        description: DIN
+                    type: object
+                  productIdentifier:
+                    type: string
+                    description: DIN
+              circularity:
+                required:
+                  - sparePartSources
+                additionalProperties: false
+                properties:
+                  components:
+                    minItems: 1
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - partName
+                      additionalProperties: false
+                      properties:
+                        partName:
+                          type: string
+                          description: DIN
+                  replacementComponents:
+                    minItems: 1
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - partName
+                      additionalProperties: false
+                      properties:
+                        partName:
+                          type: string
+                          description: DIN
+      additionalProperties: false
     SupplyChainDueDiligence:
       required:
         - supplyChainDueDiligenceReport
@@ -768,6 +806,7 @@ components:
         - materialComposition
         - performance
         - supplyChainDueDiligence
+        - maintenanceInformation
       type: object
       properties:
         materialComposition:
@@ -776,6 +815,8 @@ components:
           $ref: "#/components/schemas/Circularity"
         supplyChainDueDiligence:
           $ref: "#/components/schemas/SupplyChainDueDiligence"
+        maintenanceInformation:
+          $ref: "#/components/schemas/MaintenanceInformation"
         performance:
           $ref: "#/components/schemas/Performance"
         dynamicUpdates:
@@ -1419,3 +1460,4 @@ components:
       type: apiKey
       name: X-API-Key
       in: header
+
