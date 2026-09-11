@@ -1,2 +1,2 @@
 # DBP-OpenAPI
-The DBP Open API SPcification
+The DBP Open API Specification
