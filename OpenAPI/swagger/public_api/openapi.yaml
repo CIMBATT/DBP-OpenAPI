@@ -30,7 +30,7 @@ paths:
   /dbp/{resourceId}:
     get:
       tags:
-        - DigitalBatteryPassport
+        - Public Digital Battery Passport
       summary: Retrieve a resource of type rootElement by id.
       description: Retrieve a resource of type rootElement by id.
       parameters:
@@ -62,10 +62,10 @@ paths:
           description: Not Found
         '500':
           description: Internal Server
-  /dbp/{resourceId}/dynamicupdate:
+  /dbp/{resourceId}/dynamicdata:
     get:
       tags:
-        - DigitalBatteryPassport
+        - Public Digital Battery Passport
       summary: request get the dynamic data of a specific battery.
       description: request get the performance data of a specific battery.
       parameters:
@@ -75,14 +75,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '201':
           description: Update Digital Battery Passport
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DynamicUpdate'
+                $ref: '#/components/schemas/Performance'
         '400':
           description: Bad Request
           content:
@@ -102,7 +100,7 @@ paths:
   /dbp/{resourceId}/performance:
     get:
       tags:
-        - DigitalBatteryPassport
+        - Public Digital Battery Passport
       summary: request get the performance data of a specific battery.
       description: request get the performance data of a specific battery.
       parameters:
@@ -118,6 +116,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Performance'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /dbp/{resourceId}/maintenance:
+    get:
+      tags:
+        - Battery maintenance
+      summary: request maintenance data of a specific battery.
+      description: request maintenance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Update Digital Battery Passport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceInformation'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: provided API key is not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        -  Battery maintenance
+      summary: post a new maintencance event for a specific battery.
+      description: request maintenance data of a specific battery.
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformation'
+      responses:
+        '201':
+          description: registered successfully
         '400':
           description: Bad Request
           content:
@@ -466,6 +534,90 @@ components:
               - partName: partName
               - partName: partName
             nameOfSupplier: nameOfSupplier
+    MaintenanceInformation:
+      required:
+        - eventDate
+        - activityType
+        - modifications
+      minItems: 0
+      type: array
+      items:
+        properties:
+          eventDate:
+            type: string
+            format: date-time
+            description: DIN 6.6.2.11
+          activityType:
+            required:
+              - code
+              - definition
+            type: object
+            properties:
+              code:
+                type: string
+                description: DIN 6.6.2.11
+              definition:
+                type: string
+                description: DIN
+          modifications:
+            type: object
+            required:
+              - maintenanceInformation
+              - generalProductInformation
+              - circularity
+            description: DIN
+            properties:
+              maintenanceInformation:
+                type: string
+                description: (optional) operator information (identifier, type), activity - components (just as in the spare parts), type (repair/repurpose etc), date
+              generalProductInformation:
+                required:
+                  - operatorInformation
+                  - productIdentifier
+                type: object
+                additionalProperties: false
+                properties:
+                  operatorInformation:
+                    required:
+                      - identifier
+                    properties:
+                      identifier:
+                        type: string
+                        description: DIN
+                    type: object
+                  productIdentifier:
+                    type: string
+                    description: DIN
+              circularity:
+                required:
+                  - sparePartSources
+                additionalProperties: false
+                properties:
+                  components:
+                    minItems: 1
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - partName
+                      additionalProperties: false
+                      properties:
+                        partName:
+                          type: string
+                          description: DIN
+                  replacementComponents:
+                    minItems: 1
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - partName
+                      additionalProperties: false
+                      properties:
+                        partName:
+                          type: string
+                          description: DIN
+      additionalProperties: false
     SupplyChainDueDiligence:
       required:
         - supplyChainDueDiligenceReport
@@ -620,6 +772,7 @@ components:
         - materialComposition
         - performance
         - supplyChainDueDiligence
+        - maintenanceInformation
       type: object
       properties:
         materialComposition:
@@ -628,6 +781,8 @@ components:
           $ref: "#/components/schemas/Circularity"
         supplyChainDueDiligence:
           $ref: "#/components/schemas/SupplyChainDueDiligence"
+        maintenanceInformation:
+          $ref: "#/components/schemas/MaintenanceInformation"
         performance:
           $ref: "#/components/schemas/Performance"
         dynamicUpdates:
@@ -1271,3 +1426,4 @@ components:
       type: apiKey
       name: X-API-Key
       in: header
+
