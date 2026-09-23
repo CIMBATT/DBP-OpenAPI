@@ -1,44 +1,125 @@
 openapi: 3.0.0
 info:
   title: Digital Battery Passport Back Office API
-  version: '0.1'
+  description: Back Office API for managing Digital Battery Passports
+  version: '1.0.0'
+  contact:
+    name: Battery Passport Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3002
+    description: Development server
+  - url: https://api.battery-passport.example.com
+    description: Production server
+
+security:
+  - ApiKeyAuth: []
+
 paths:
-  /bo/dbp/test-data:
-    post:
-      tags:
-        - Back Office API DBP
-      summary: Insert the demo passport into MongoDB.
-      responses:
-        '201':
-          description: registered successfully
-        '401':
-          description: provided API key is not valid
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-  /bo/dbp/:
+  /health:
     get:
+      summary: Health check endpoint
+      description: Check if the API is running
       tags:
-        - Back Office API DBP
-      summary: Get a passport for Tier1 (public) access
+        - Health
+      security: []
       responses:
         '200':
-          description: OK
+          description: API is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DigitalBatteryPassport'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /bo/register:
+    post:
+      summary: Register Back Office API
+      description: Register this Back Office API at a target BO endpoint
+      tags:
+        - Back Office Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BORegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: registered successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/:
+    get:
+      summary: List all passports with pagination
+      description: Retrieve a paginated list of Digital Battery Passports (Tier1 public access)
+      tags:
+        - Digital Battery Passports
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number (default 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          description: Number of items per page (default 25)
+          schema:
+            type: integer
+            minimum: 1
+            default: 25
+      responses:
+        '200':
+          description: Passports retrieved successfully with pagination info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportListResponse'
+        '400':
+          description: Bad Request (invalid page or limit)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
     post:
+      summary: Create or update Digital Battery Passport
+      description: Create a new Digital Battery Passport or update an existing one
       tags:
-        - Back Office API DBP
-      summary: Create a Digital Battery Passport.
+        - Digital Battery Passports
       requestBody:
         required: true
         content:
@@ -47,7 +128,7 @@ paths:
               $ref: '#/components/schemas/DigitalBatteryPassport'
       responses:
         '201':
-          description: Digital Battery Passport created
+          description: Passport created or updated successfully
           content:
             application/json:
               schema:
@@ -59,52 +140,298 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-  /bo/dbp/t2:
+
+  /bo/dbp/{resourceId}:
     get:
+      summary: Get passport by ID
+      description: Retrieve a Digital Battery Passport by its resource ID
       tags:
-        - Back Office API DBP
-      summary: Get a passport for Tier2 (Legitimate Access) access
+        - Digital Battery Passports
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
       responses:
         '200':
-          description: OK
+          description: Passport retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DigitalBatteryPassport'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-  /bo/dbp/t3:
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/{resourceId}/performance:
     get:
+      summary: Get battery performance data
+      description: Retrieve performance data for a specific battery passport
       tags:
-        - Back Office API DBP
-      summary: Get a passport for Tier3 (Regulator) access
+        - Battery Performance
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
       responses:
         '200':
-          description: OK
+          description: Performance data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      summary: Update battery performance data
+      description: Update performance metrics for a battery passport
+      tags:
+        - Battery Performance
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Performance'
+      responses:
+        '201':
+          description: Performance data updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DigitalBatteryPassport'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/{resourceId}/maintenance:
+    get:
+      summary: Get maintenance information
+      description: Retrieve maintenance history for a specific battery passport
+      tags:
+        - Battery Maintenance
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      responses:
+        '200':
+          description: Maintenance information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      summary: Add maintenance event
+      description: Add a new maintenance event to a battery passport
+      tags:
+        - Battery Maintenance
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformationItem'
+      responses:
+        '201':
+          description: Maintenance event added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: registered successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/{resourceId}/dynamic-updates:
+    get:
+      summary: Get dynamic updates
+      description: Retrieve dynamic updates for a specific battery passport
+      tags:
+        - Dynamic Updates
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      responses:
+        '200':
+          description: Dynamic updates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/t2/{resourceId}:
+    get:
+      summary: Get passport by ID (Tier2)
+      description: Retrieve a Digital Battery Passport by ID (Tier2 - Legitimate Access)
+      tags:
+        - Digital Battery Passports - Tier2
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      responses:
+        '200':
+          description: Passport retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/t3/{resourceId}:
+    get:
+      summary: Get passport by ID (Tier3)
+      description: Retrieve a Digital Battery Passport by ID (Tier3 - Regulator Access)
+      tags:
+        - Digital Battery Passports - Tier3
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      responses:
+        '200':
+          description: Passport retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
   /bo/dbp/t2/{resourceId}/performance:
     get:
+      summary: Get battery performance data (Tier2)
+      description: Retrieve performance data for a specific battery (Tier2)
       tags:
-        - Back Office API DBP
-      summary: request get the performance data of a specific battery.
+        - Battery Performance - Tier2
       parameters:
         - name: resourceId
           in: path
@@ -113,21 +440,28 @@ paths:
             type: string
       responses:
         '200':
-          description: OK
+          description: Performance data retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Performance'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
     post:
+      summary: Update battery performance data (Tier2)
+      description: Update performance metrics for a battery (Tier2)
       tags:
-        - Back Office API DBP
-      summary: update performance data for a battery.
+        - Battery Performance - Tier2
       parameters:
         - name: resourceId
           in: path
@@ -142,22 +476,30 @@ paths:
               $ref: '#/components/schemas/Performance'
       responses:
         '201':
-          description: Update Digital Battery Passport
+          description: Performance data updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DigitalBatteryPassport'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
   /bo/dbp/t2/{resourceId}/maintenance:
     get:
+      summary: Get maintenance information (Tier2)
+      description: Retrieve maintenance history (Tier2)
       tags:
-        - Back Office API DBP
-      summary: request maintenance data of a specific battery.
+        - Battery Maintenance - Tier2
       parameters:
         - name: resourceId
           in: path
@@ -166,21 +508,30 @@ paths:
             type: string
       responses:
         '200':
-          description: OK
+          description: Maintenance information retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MaintenanceInformation'
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
     post:
+      summary: Add maintenance event (Tier2)
+      description: Add a new maintenance event (Tier2)
       tags:
-        - Back Office API DBP
-      summary: post a new maintenance event for a specific battery.
+        - Battery Maintenance - Tier2
       parameters:
         - name: resourceId
           in: path
@@ -195,22 +546,136 @@ paths:
               $ref: '#/components/schemas/MaintenanceInformationItem'
       responses:
         '201':
-          description: registered successfully
+          description: Maintenance event added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: registered successfully
         '401':
-          description: provided API key is not valid
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/t2/{resourceId}/dynamic-updates:
+    get:
+      summary: Get dynamic updates (Tier2)
+      description: Retrieve dynamic updates (Tier2)
+      tags:
+        - Dynamic Updates - Tier2
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dynamic updates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/t3/{resourceId}/dynamic-updates:
+    get:
+      summary: Get dynamic updates (Tier3)
+      description: Retrieve dynamic updates (Tier3)
+      tags:
+        - Dynamic Updates - Tier3
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dynamic updates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API Key for authentication
+
   schemas:
     ApiError:
       type: object
+      required:
+        - error
+        - message
       properties:
         error:
           type: string
+          description: Error type
         message:
           type: string
+          description: Error message
+
+    BORegisterRequest:
+      type: object
+      required:
+        - publicURL
+        - apiKey
+        - oemName
+      properties:
+        publicURL:
+          type: string
+          format: uri
+          description: Public URL of the API
+        apiKey:
+          type: string
+          description: API Key for authentication
+        oemName:
+          type: string
+          description: OEM name
+
     CreateDigitalBatteryPassportResponse:
       type: object
       required:
@@ -218,6 +683,62 @@ components:
       properties:
         DBPId:
           type: string
+          description: Digital Battery Passport ID
+
+    PaginationInfo:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Number of items per page
+        total:
+          type: integer
+          description: Total number of passports
+        pages:
+          type: integer
+          description: Total number of pages
+
+    PassportListResponse:
+      type: object
+      required:
+        - items
+        - pagination
+      properties:
+        items:
+          type: array
+          description: Array of Digital Battery Passports
+          items:
+            $ref: '#/components/schemas/DigitalBatteryPassport'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    Identifier:
+      type: object
+      required:
+        - identifier
+      properties:
+        identifier:
+          type: string
+
+    ActivityType:
+      type: object
+      required:
+        - code
+        - definition
+      properties:
+        code:
+          type: string
+        definition:
+          type: string
+
     MaintenanceInformationItem:
       type: object
       required:
@@ -229,49 +750,202 @@ components:
           type: string
           format: date-time
         activityType:
-          type: object
-          required:
-            - code
-            - definition
-          properties:
-            code:
-              type: string
-            definition:
-              type: string
+          $ref: '#/components/schemas/ActivityType'
         modifications:
           type: object
-          additionalProperties: true
-    MaintenanceInformation:
-      type: array
-      items:
-        $ref: '#/components/schemas/MaintenanceInformationItem'
+          description: Modification details
+
     Performance:
       type: object
+      required:
+        - batteryCondition
+        - batteryTechnicalProperties
       properties:
         batteryCondition:
           type: object
+          description: Battery condition metrics
         batteryTechnicalProperties:
           type: object
-    DigitalBatteryPassport:
+          description: Battery technical properties
+
+    BatteryChemistry:
       type: object
       properties:
+        shortName:
+          type: string
+        clearName:
+          type: string
+
+    BatteryMaterial:
+      type: object
+      properties:
+        batteryMaterial:
+          type: string
+        batteryMaterialLocation:
+          type: array
+          items:
+            type: object
+        isCriticalRawMaterial:
+          type: boolean
+
+    MaterialComposition:
+      type: object
+      properties:
+        batteryChemistry:
+          $ref: '#/components/schemas/BatteryChemistry'
+        batteryMaterials:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatteryMaterial'
+        hazardousSubstances:
+          type: array
+          items:
+            type: object
+
+    Circularity:
+      type: object
+      properties:
+        renewableContent:
+          type: number
+        recycledContent:
+          type: array
+          items:
+            type: object
+        endOfLifeInformation:
+          type: object
+        sparePartSources:
+          type: array
+          items:
+            type: object
+
+    SupplyChainDueDiligence:
+      type: object
+      properties:
+        supplyChainDueDiligenceReport:
+          type: string
+        supplyChainIndices:
+          type: number
+        thirdPartyAssurances:
+          type: string
+
+    CarbonFootprint:
+      type: object
+      properties:
+        absoluteCarbonFootprint:
+          type: number
+        batteryCarbonFootprint:
+          type: number
+        carbonFootprintStudy:
+          type: string
+        carbonFootprintPerformanceClass:
+          type: string
+        carbonFootprintPerLifecycleStage:
+          type: object
+
+    GeneralProductInformation:
+      type: object
+      required:
+        - manufacturerInformation
+        - puttingIntoService
+        - manufacturingDate
+        - batteryMass
+        - manufacturingPlace
+        - productIdentifier
+        - warrantyPeriod
+        - batteryCategory
+      properties:
+        manufacturerInformation:
+          $ref: '#/components/schemas/Identifier'
+        puttingIntoService:
+          type: string
+          format: date-time
+        manufacturingDate:
+          type: string
+          format: date-time
+        operatorInformation:
+          $ref: '#/components/schemas/Identifier'
+        batteryMass:
+          type: number
+        manufacturingPlace:
+          type: object
+        productIdentifier:
+          type: string
+        warrantyPeriod:
+          type: string
+        batteryCategory:
+          type: string
+        batteryPassportIdentifier:
+          type: string
+
+    Label:
+      type: object
+      properties:
+        labelingMeaning:
+          type: string
+        labelingSymbol:
+          type: string
+        labelingSubject:
+          type: string
+
+    Labeling:
+      type: object
+      properties:
+        resultOfTestReport:
+          type: string
+        declarationOfConformity:
+          type: string
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+
+    DynamicUpdate:
+      type: object
+      properties:
+        lastUpdate:
+          type: string
+          format: date-time
+        generalProductInformation:
+          type: object
+          properties:
+            operatorInformation:
+              $ref: '#/components/schemas/Identifier'
+            batteryStatus:
+              type: string
+        performance:
+          $ref: '#/components/schemas/Performance'
+
+    DigitalBatteryPassport:
+      type: object
+      required:
+        - materialComposition
+        - circularity
+        - supplyChainDueDiligence
+        - maintenanceInformation
+        - performance
+        - carbonFootprint
+        - generalProductInformation
+        - labeling
+      properties:
         materialComposition:
-          type: object
+          $ref: '#/components/schemas/MaterialComposition'
         circularity:
-          type: object
+          $ref: '#/components/schemas/Circularity'
         supplyChainDueDiligence:
-          type: object
+          $ref: '#/components/schemas/SupplyChainDueDiligence'
         maintenanceInformation:
-          $ref: '#/components/schemas/MaintenanceInformation'
+          type: array
+          items:
+            $ref: '#/components/schemas/MaintenanceInformationItem'
         performance:
           $ref: '#/components/schemas/Performance'
         dynamicUpdates:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/DynamicUpdate'
         carbonFootprint:
-          type: object
+          $ref: '#/components/schemas/CarbonFootprint'
         generalProductInformation:
-          type: object
+          $ref: '#/components/schemas/GeneralProductInformation'
         labeling:
-          type: object
+          $ref: '#/components/schemas/Labeling'
