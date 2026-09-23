@@ -1,0 +1,35 @@
+{
+  "name": "dbp-public-api",
+  "version": "1.0.0",
+  "description": "Public proxy API for the Digital Battery Passport OpenAPI specification",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts"
+  },
+  "keywords": [
+    "battery",
+    "passport",
+    "openapi",
+    "api",
+    "typescript",
+    "proxy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.6",
+    "express": "^4.19.2",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.14.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

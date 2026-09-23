@@ -103,6 +103,34 @@ app.post('/bo/dbp/', async (req, res) => {
   res.status(201).json(response);
 });
 
+app.get('/bo/dbp/', async (req, res) => {
+  await connectMongo();
+  const page = parseInt(req.query.page as string, 10) || 1;
+  const limit = parseInt(req.query.limit as string, 10) || 25;
+  
+  if (page < 1 || limit < 1) {
+    return apiError(res, 400, 'BadRequest', 'page and limit must be positive integers.');
+  }
+  
+  const skip = (page - 1) * limit;
+  const total = await passportsCollection.countDocuments({});
+  const passports = await passportsCollection
+    .find({})
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+  
+  res.json({
+    items: passports,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  });
+});
+
 app.get('/bo/dbp/:resourceId', async (req, res) => {
   const passport = await getPassport(req.params.resourceId);
   if (!passport) return notFound(res);

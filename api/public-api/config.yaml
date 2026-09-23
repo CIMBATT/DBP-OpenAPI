@@ -1,0 +1,4 @@
+port: 3003
+apiKey: demo-public-api-key
+boApiUrl: http://localhost:3002
+boApiKey: demo-bo-api-key

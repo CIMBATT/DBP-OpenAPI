@@ -1,0 +1,1043 @@
+openapi: 3.0.0
+info:
+  title: Digital Battery Passport Public API
+  description: Public proxy API for Digital Battery Passport. Forwards requests to Back Office API with automatic credential handling.
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:3003
+    description: Development server
+  - url: https://api.batterybattery.example.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: API health and status endpoints
+  - name: Battery Passport
+    description: Battery passport retrieval and management
+  - name: Performance
+    description: Battery performance metrics
+  - name: Maintenance
+    description: Battery maintenance history
+  - name: Dynamic Updates
+    description: Real-time battery status updates
+  - name: Tier 2
+    description: Tier 2 compatibility routes
+  - name: Tier 3
+    description: Tier 3 compatibility routes
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Check if the API is running. No authentication required.
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /bo/dbp/{resourceId}:
+    get:
+      tags:
+        - Battery Passport
+      summary: Get battery passport
+      description: Retrieve a complete Digital Battery Passport by resource ID
+      operationId: getBatteryPassport
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          description: Battery passport identifier (e.g., battery-001)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Battery passport retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+    post:
+      tags:
+        - Battery Passport
+      summary: Create or update battery passport
+      description: Create a new battery passport or update an existing one
+      operationId: createUpdateBatteryPassport
+      security:
+        - api_key: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalBatteryPassport'
+      responses:
+        '201':
+          description: Battery passport created or updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  DBPId:
+                    type: string
+                    example: battery-001
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+  /bo/dbp/{resourceId}/performance:
+    get:
+      tags:
+        - Performance
+      summary: Get performance metrics
+      description: Retrieve battery performance and technical properties
+      operationId: getPerformance
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Performance metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+    post:
+      tags:
+        - Performance
+      summary: Update performance metrics
+      description: Update battery performance data
+      operationId: updatePerformance
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Performance'
+      responses:
+        '201':
+          description: Performance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+  /bo/dbp/{resourceId}/maintenance:
+    get:
+      tags:
+        - Maintenance
+      summary: Get maintenance history
+      description: Retrieve maintenance events for a battery passport
+      operationId: getMaintenance
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance history retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+    post:
+      tags:
+        - Maintenance
+      summary: Add maintenance event
+      description: Record a new maintenance event
+      operationId: addMaintenance
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformationItem'
+      responses:
+        '201':
+          description: Maintenance event added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: registered successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+  /bo/dbp/{resourceId}/dynamic-updates:
+    get:
+      tags:
+        - Dynamic Updates
+      summary: Get dynamic updates
+      description: Retrieve dynamic status updates for a battery passport
+      operationId: getDynamicUpdates
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dynamic updates retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/GatewayError'
+
+  /bo/dbp/t2/{resourceId}:
+    get:
+      tags:
+        - Tier 2
+      summary: Get battery passport (Tier 2)
+      operationId: getBatteryPassportT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Battery passport retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t2/{resourceId}/performance:
+    get:
+      tags:
+        - Tier 2
+      summary: Get performance metrics (Tier 2)
+      operationId: getPerformanceT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Performance retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Tier 2
+      summary: Update performance (Tier 2)
+      operationId: updatePerformanceT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Performance'
+      responses:
+        '201':
+          description: Performance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t2/{resourceId}/maintenance:
+    get:
+      tags:
+        - Tier 2
+      summary: Get maintenance (Tier 2)
+      operationId: getMaintenanceT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Tier 2
+      summary: Add maintenance (Tier 2)
+      operationId: addMaintenanceT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformationItem'
+      responses:
+        '201':
+          description: Maintenance added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t2/{resourceId}/dynamic-updates:
+    get:
+      tags:
+        - Tier 2
+      summary: Get dynamic updates (Tier 2)
+      operationId: getDynamicUpdatesT2
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dynamic updates retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t3/{resourceId}:
+    get:
+      tags:
+        - Tier 3
+      summary: Get battery passport (Tier 3)
+      operationId: getBatteryPassportT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Battery passport retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t3/{resourceId}/performance:
+    get:
+      tags:
+        - Tier 3
+      summary: Get performance (Tier 3)
+      operationId: getPerformanceT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Performance retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Tier 3
+      summary: Update performance (Tier 3)
+      operationId: updatePerformanceT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Performance'
+      responses:
+        '201':
+          description: Performance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalBatteryPassport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t3/{resourceId}/maintenance:
+    get:
+      tags:
+        - Tier 3
+      summary: Get maintenance (Tier 3)
+      operationId: getMaintenanceT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Tier 3
+      summary: Add maintenance (Tier 3)
+      operationId: addMaintenanceT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceInformationItem'
+      responses:
+        '201':
+          description: Maintenance added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bo/dbp/t3/{resourceId}/dynamic-updates:
+    get:
+      tags:
+        - Tier 3
+      summary: Get dynamic updates (Tier 3)
+      operationId: getDynamicUpdatesT3
+      security:
+        - api_key: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dynamic updates retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DynamicUpdate'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-api-key
+      in: header
+      description: API key required for all endpoints except /health
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    Unauthorized:
+      description: Unauthorized - missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+    GatewayError:
+      description: Backend service unavailable (502)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: NotFound
+        message:
+          type: string
+          example: Resource not found
+
+    Identifier:
+      type: object
+      required:
+        - identifier
+      properties:
+        identifier:
+          type: string
+
+    DigitalBatteryPassport:
+      type: object
+      required:
+        - generalProductInformation
+        - materialComposition
+        - performance
+        - circularity
+        - supplyChainDueDiligence
+        - carbonFootprint
+        - labeling
+        - maintenanceInformation
+      properties:
+        generalProductInformation:
+          $ref: '#/components/schemas/GeneralProductInformation'
+        materialComposition:
+          $ref: '#/components/schemas/MaterialComposition'
+        performance:
+          $ref: '#/components/schemas/Performance'
+        circularity:
+          $ref: '#/components/schemas/Circularity'
+        supplyChainDueDiligence:
+          $ref: '#/components/schemas/SupplyChainDueDiligence'
+        carbonFootprint:
+          $ref: '#/components/schemas/CarbonFootprint'
+        labeling:
+          $ref: '#/components/schemas/Labeling'
+        maintenanceInformation:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaintenanceInformationItem'
+        dynamicUpdates:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicUpdate'
+
+    GeneralProductInformation:
+      type: object
+      required:
+        - productIdentifier
+        - manufacturerInformation
+        - batteryMass
+        - manufacturingDate
+        - puttingIntoService
+        - batteryCategory
+        - manufacturingPlace
+        - warrantyPeriod
+      properties:
+        productIdentifier:
+          type: string
+        manufacturerInformation:
+          $ref: '#/components/schemas/Identifier'
+        operatorInformation:
+          $ref: '#/components/schemas/Identifier'
+        batteryMass:
+          type: number
+        manufacturingDate:
+          type: string
+          format: date
+        puttingIntoService:
+          type: string
+          format: date
+        batteryCategory:
+          type: string
+        manufacturingPlace:
+          type: object
+          properties:
+            postalCode1:
+              type: string
+        warrantyPeriod:
+          type: string
+        batteryPassportIdentifier:
+          type: string
+
+    MaterialComposition:
+      type: object
+      required:
+        - batteryChemistry
+        - batteryMaterials
+        - hazardousSubstances
+      properties:
+        batteryChemistry:
+          type: object
+          properties:
+            shortName:
+              type: string
+            clearName:
+              type: string
+        batteryMaterials:
+          type: array
+          items:
+            type: object
+            properties:
+              batteryMaterial:
+                type: string
+              batteryMaterialLocation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    componentName:
+                      type: string
+              isCriticalRawMaterial:
+                type: boolean
+        hazardousSubstances:
+          type: array
+          items:
+            type: object
+            properties:
+              hazardousSubstanceIdentifier:
+                type: string
+              hazardousSubstanceImpact:
+                type: array
+                items:
+                  type: string
+              hazardousSubstanceLocation:
+                type: object
+                properties:
+                  componentName:
+                    type: string
+
+    Performance:
+      type: object
+      required:
+        - batteryCondition
+        - batteryTechnicalProperties
+      properties:
+        batteryCondition:
+          type: object
+          required:
+            - capacityFade
+            - internalResistanceIncrease
+          properties:
+            capacityFade:
+              type: object
+              properties:
+                capacityFadeValue:
+                  type: number
+                lastUpdate:
+                  type: string
+                  format: date-time
+            internalResistanceIncrease:
+              type: array
+              items:
+                type: object
+                properties:
+                  batteryComponent:
+                    type: string
+                  internalResistanceIncreaseValue:
+                    type: number
+                  lastUpdateInternalResistanceIncrease:
+                    type: string
+                    format: date-time
+        batteryTechnicalProperties:
+          type: object
+          properties:
+            roundTripEfficiencyFade:
+              type: number
+            cRate:
+              type: number
+            ratedCapacity:
+              type: number
+            nominalVoltage:
+              type: number
+            maximumVoltage:
+              type: number
+            minimumVoltage:
+              type: number
+            expectedLifetime:
+              type: number
+            powerFade:
+              type: number
+            roundtripEfficiency:
+              type: number
+            ratedMaximumPower:
+              type: number
+            expectedNumberOfCycles:
+              type: number
+
+    Circularity:
+      type: object
+      required:
+        - renewableContent
+        - recycledContent
+        - endOfLifeInformation
+        - sparePartSources
+      properties:
+        renewableContent:
+          type: number
+        recycledContent:
+          type: array
+          items:
+            type: object
+            properties:
+              recycledMaterial:
+                type: string
+              postConsumerShare:
+                type: number
+              preConsumerShare:
+                type: number
+        endOfLifeInformation:
+          type: object
+          properties:
+            informationOnCollection:
+              type: string
+            wastePrevention:
+              type: string
+            separateCollection:
+              type: string
+        sparePartSources:
+          type: array
+          items:
+            type: object
+            properties:
+              nameOfSupplier:
+                type: string
+              components:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    partName:
+                      type: string
+
+    SupplyChainDueDiligence:
+      type: object
+      required:
+        - supplyChainDueDiligenceReport
+        - supplyChainIndices
+        - thirdPartyAssurances
+      properties:
+        supplyChainDueDiligenceReport:
+          type: string
+        supplyChainIndices:
+          type: number
+        thirdPartyAssurances:
+          type: string
+
+    CarbonFootprint:
+      type: object
+      required:
+        - batteryCarbonFootprint
+        - carbonFootprintPerformanceClass
+        - carbonFootprintStudy
+        - carbonFootprintPerLifecycleStage
+      properties:
+        batteryCarbonFootprint:
+          type: number
+        absoluteCarbonFootprint:
+          type: number
+        carbonFootprintPerformanceClass:
+          type: string
+        carbonFootprintStudy:
+          type: string
+        carbonFootprintPerLifecycleStage:
+          type: object
+          properties:
+            carbonFootprintPerLifecycleStage1:
+              type: array
+              items:
+                type: object
+                properties:
+                  lifecycleStage:
+                    type: string
+                  carbonFootprint:
+                    type: number
+
+    Labeling:
+      type: object
+      required:
+        - resultOfTestReport
+        - declarationOfConformity
+        - labels
+      properties:
+        resultOfTestReport:
+          type: string
+        declarationOfConformity:
+          type: string
+        labels:
+          type: array
+          items:
+            type: object
+            properties:
+              labelingSubject:
+                type: string
+              labelingMeaning:
+                type: string
+              labelingSymbol:
+                type: string
+
+    MaintenanceInformationItem:
+      type: object
+      required:
+        - eventDate
+        - activityType
+        - modifications
+      properties:
+        eventDate:
+          type: string
+          format: date-time
+        activityType:
+          type: object
+          required:
+            - code
+            - definition
+          properties:
+            code:
+              type: string
+            definition:
+              type: string
+        modifications:
+          type: object
+          required:
+            - maintenanceInformation
+            - generalProductInformation
+            - circularity
+          properties:
+            maintenanceInformation:
+              type: string
+            generalProductInformation:
+              type: object
+              properties:
+                operatorInformation:
+                  $ref: '#/components/schemas/Identifier'
+                productIdentifier:
+                  type: string
+            circularity:
+              type: object
+              properties:
+                components:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      partName:
+                        type: string
+                replacementComponents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      partName:
+                        type: string
+
+    DynamicUpdate:
+      type: object
+      required:
+        - lastUpdate
+        - generalProductInformation
+      properties:
+        lastUpdate:
+          type: string
+          format: date-time
+        generalProductInformation:
+          type: object
+          required:
+            - batteryStatus
+            - operatorInformation
+          properties:
+            batteryStatus:
+              type: string
+            operatorInformation:
+              $ref: '#/components/schemas/Identifier'
+        performance:
+          oneOf:
+            - $ref: '#/components/schemas/Performance'
+            - type: "null"
