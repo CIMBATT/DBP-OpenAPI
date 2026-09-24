@@ -1,7 +1,28 @@
 openapi: 3.0.0
 info:
   title: Digital Battery Passport Public API
-  description: Public proxy API for Digital Battery Passport. Forwards requests to Back Office API with automatic credential handling.
+  description: |
+    This OpenAPI specification describes the DBP Back Office API that needs to be implemented and coupled to the Back Office data storage. 
+    There are 3 kinds of DBP's and endpoints are defined for each):
+    1. Public Information Tier: 
+      - Visible to everyone (consumers, general public) via a QR code scan. 
+      - Battery ID & Model: Manufacturer name, battery type, and manufacturing facility. 
+      - Performance & Durability: Expected life cycle, capacity, and power. 
+      - Environmental Impact: Carbon footprint (per kWh of energy delivered), recycled content percentage, and renewable content share. 
+      - Regulatory Compliance: CE mark, EU declaration of conformity.
+    
+    2. Parties with Legitimate Interest Tier (Restricted Access):
+      - Accessible to specific, authorized entities, such as independent repairers, remanufacturers, repurposing operators, and recyclers. 
+      - On top of the tier 1 data, the following data must be available to this tier:
+          - Detailed Composition: Information on cathode, anode, and electrolyte materials. 
+          - Dismantling & Safety: Disassembly instructions, exploded diagrams, and safety guidelines. 
+          - Live Data: Current State of Health (SoH) and usage/charging history. 
+    
+    3. Regulatory Data Tier (Strictly Confidential). 
+      - Accessible only by public authoritie, such as the European Commission, national market surveillance authorities, and notified bodies):  
+      - Audit Documentation: Detailed evidence of regulatory compliance. 
+      - Testing Results: Full technical documentation and test reports. 
+      - Proprietary Data: Highly sensitive material composition or manufacturing process data not required for safe handling, but necessary for regulatory validation.
   version: 1.0.0
   contact:
     name: API Support
