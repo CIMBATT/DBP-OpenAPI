@@ -119,67 +119,6 @@ paths:
                   $ref: '#/components/responses/Unauthorized'
                 '502':
                   $ref: '#/components/responses/GatewayError'
-    get:
-      tags:
-        - Battery Passport
-      summary: Get battery passport
-      description: Retrieve a complete Digital Battery Passport by resource ID
-      operationId: getBatteryPassport
-      security:
-        - api_key: []
-      parameters:
-        - name: resourceId
-          in: path
-          required: true
-          description: Battery passport identifier (e.g., battery-001)
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Battery passport retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DigitalBatteryPassport'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '502':
-          $ref: '#/components/responses/GatewayError'
-
-    post:
-      tags:
-        - Battery Passport
-      summary: Create or update battery passport
-      description: Create a new battery passport or update an existing one
-      operationId: createUpdateBatteryPassport
-      security:
-        - api_key: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DigitalBatteryPassport'
-      responses:
-        '201':
-          description: Battery passport created or updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  DBPId:
-                    type: string
-                    example: battery-001
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '502':
-          $ref: '#/components/responses/GatewayError'
-
   /bo/dbp/{resourceId}/performance:
     get:
       tags:

@@ -1,6 +1,6 @@
 port: 3002
 apiKey: demo-bo-api-key
-oemName: DAF
+oemName: ACME
 mongoHost: localhost
 mongoPort: 27017
 mongoDb: dbp
