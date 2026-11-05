@@ -71,6 +71,22 @@ Development (with hot reload):
 npm run dev
 ```
 
+### Docker
+
+From `DBP-OpenAPI\api\public-api`, build and run:
+
+```powershell
+docker build -t dbp-public-api .
+docker run --rm -p 3003:3003 --mount "type=bind,source=$((Get-Item .\config.yaml).FullName),target=/app/config.yaml,readonly" dbp-public-api
+```
+
+Set `boApiUrl` in the mounted configuration to a Back Office API address
+reachable from the container (for example, `http://host.docker.internal:3002`
+when the backend runs on the Docker Desktop host). `localhost` refers to
+the public-api container itself. The image exposes the default port `3003`;
+if you change `port` in the configuration, update the container port mapping too.
+MongoDB is not required in this image because requests are proxied to bo-api.
+
 ## API Endpoints
 
 All endpoints require `x-api-key` header (except `/health`).
@@ -284,4 +300,3 @@ Monitor these in production:
 - Run `npm run build` to check compilation
 - All types are defined in `src/types.ts`
 - Use `tsc --strict` for stricter type checking
-

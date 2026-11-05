@@ -145,6 +145,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+
   /bo/dbp/{resourceId}:
     get:
       summary: Get passport by ID
@@ -359,6 +360,79 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /bo/dbp/{resourceId}/update:
+    post:
+      summary: Import dynamic updates from the BMS API
+      description: >-
+        Fetches GET {bmsBaseUrl}/bms/{resourceId}/performance/last and appends the
+        returned DynamicUpdate object (or array of objects) to the dynamicUpdates array of the
+        passport whose generalProductInformation.productIdentifier equals
+        resourceId. If the passport already has dynamicUpdates, the most recent
+        lastUpdate is sent as the lastUpdatedAt query parameter so only newer
+        measurements are requested. Identical stored objects are not added again.
+        The newest returned update's performance replaces the root performance
+        when present. An empty array or empty object makes no database write.
+        Other passport fields are unchanged. bmsBaseUrl comes from BMS_BASE_URL,
+        config.yaml bmsBaseUrl, or defaults to http://localhost:59068. The BMS
+        API key (sent as x-api-key) comes from BMS_API_KEY or config.yaml
+        bmsApiKey (in that order); if neither is set the endpoint returns 503.
+        The upstream timeout is 30 seconds.
+      tags:
+        - Dynamic Updates
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The product identifier of the battery passport
+      responses:
+        '200':
+          description: Import completed (count is the number of updates received, including duplicates)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, DBPId, count]
+                properties:
+                  status:
+                    type: string
+                    example: dynamic updates imported successfully
+                  DBPId:
+                    type: string
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Database operation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '502':
+          description: BMS request failed, timed out, or returned invalid DynamicUpdate data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: BMS API key is not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
   /bo/dbp/t2/{resourceId}:
     get:
       summary: Get passport by ID (Tier2)
@@ -493,6 +567,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /bo/dbp/t3/{resourceId}/performance:
+    get:
+      summary: Get battery performance data (Tier3)
+      description: Retrieve performance data for a specific battery (Tier3)
+      tags:
+        - Battery Performance - Tier3
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Performance data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Performance'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
   /bo/dbp/t2/{resourceId}/maintenance:
     get:
       summary: Get maintenance information (Tier2)
@@ -554,6 +660,40 @@ paths:
                   status:
                     type: string
                     example: registered successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /bo/dbp/t3/{resourceId}/maintenance:
+    get:
+      summary: Get maintenance information (Tier3)
+      description: Retrieve maintenance history (Tier3)
+      tags:
+        - Battery Maintenance - Tier3
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Maintenance information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceInformationItem'
         '401':
           description: Unauthorized
           content:
@@ -662,7 +802,6 @@ components:
       required:
         - publicURL
         - apiKey
-        - oemName
       properties:
         publicURL:
           type: string
@@ -671,9 +810,6 @@ components:
         apiKey:
           type: string
           description: API Key for authentication
-        oemName:
-          type: string
-          description: OEM name
 
     CreateDigitalBatteryPassportResponse:
       type: object
@@ -900,19 +1036,27 @@ components:
 
     DynamicUpdate:
       type: object
+      required:
+        - lastUpdate
+        - generalProductInformation
       properties:
         lastUpdate:
           type: string
           format: date-time
         generalProductInformation:
           type: object
+          required:
+            - batteryStatus
+            - operatorInformation
           properties:
             operatorInformation:
               $ref: '#/components/schemas/Identifier'
             batteryStatus:
               type: string
         performance:
-          $ref: '#/components/schemas/Performance'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Performance'
 
     DigitalBatteryPassport:
       type: object

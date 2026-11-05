@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cimbatt-public-api.fullname" . }}
+  labels:
+    {{- include "cimbatt-public-api.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - name: http
+      port: {{ required "api.service.port is required" .Values.api.service.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "cimbatt-public-api.selectorLabels" . | nindent 4 }}

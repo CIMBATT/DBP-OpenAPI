@@ -1,6 +1,9 @@
-port: 3002
+port: 8080
 apiKey: demo-bo-api-key
 oemName: ACME
 mongoHost: localhost
 mongoPort: 27017
 mongoDb: dbp
+bmsBaseUrl: https://influxapi.digital-passport.org/
+# API key sent as x-api-key to the BMS API (must match API-KEY of bms-restapi). BMS_API_KEY env var overrides it.
+bmsApiKey: "BMSAPI_rJdxZustJ66kzR0BJr0GVB10D9haU7oCMD7uhKnGxN0Goek6PAflxMoG7"

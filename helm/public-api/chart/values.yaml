@@ -1,0 +1,47 @@
+podAnnotations: {}
+podLabels: {}
+
+global:
+  replicaCount: 1
+  imagePullSecrets: []
+  securityContext: {}
+
+api:
+  image:
+    repository: tnode.azurecr.io/cimbatt/public-api
+    tag: "latest"
+    pullPolicy: Always
+
+  podSecurityContext: {}
+  resources: {}
+  env: []
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+    hosts:
+      - host: public-api.cimbatt.digital-passport.org
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: public-api.cimbatt.digital-passport.org
+        hosts:
+          - public-api.cimbatt.digital-passport.org
+
+  config:
+    port: 8080
+    apiKey: "demo-public-api-key"
+    # BO API Service for release "bo-api" in the same namespace.
+    boApiUrl: "http://bo-api-bo-api:8080"
+    boApiKey: "demo-bo-api-key"

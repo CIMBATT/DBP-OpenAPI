@@ -10,7 +10,7 @@ import type {
   Performance,
 } from './types';
 import { apiError, notFound } from './utils';
-import { createTestPassport } from './testData';
+import { isDynamicUpdate, latestDynamicUpdate } from './dynamicUpdate';
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
@@ -69,24 +69,65 @@ app.post('/bo/register', async (req, res) => {
   res.status(201).json({ status: 'registered successfully' });
 });
 
-app.post('/bo/dbp/test-data', async (_req, res) => {
-  const testPassports = Array.from({ length: 50 }, (_value, arrayIndex) => createTestPassport(arrayIndex + 1));
-  await connectMongo();
-  await passportsCollection.deleteMany({
-    'generalProductInformation.productIdentifier': { $in: testPassports.map((passport) => passport.generalProductInformation.productIdentifier) },
-  } as never);
-  await passportsCollection.insertMany(testPassports);
-  res.status(201).json({
-    status: 'registered successfully',
-    count: testPassports.length,
-    DBPIds: testPassports.map((passport) => passport.generalProductInformation.productIdentifier),
-  });
-});
-
 const getPassport = async (id?: string): Promise<DigitalBatteryPassport | undefined> => {
   if (!id) return (await passportsCollection.findOne({}, { sort: { 'generalProductInformation.productIdentifier': 1 } })) ?? undefined;
   return (await passportsCollection.findOne({ 'generalProductInformation.productIdentifier': id } as never)) ?? undefined;
 };
+
+app.post('/bo/dbp/:id/update', async (req, res) => {
+  const id = req.params.id;
+  if (!config.bmsApiKey) {
+    return apiError(res, 503, 'ConfigurationError', 'BMS API key is not configured (set BMS_API_KEY or bmsApiKey in config.yaml).');
+  }
+  try {
+    await connectMongo();
+    const passport = await getPassport(id);
+    if (!passport) return notFound(res, `Battery passport '${id}' was not found.`);
+
+    let updates: unknown;
+    try {
+      const url = new URL(`${config.bmsBaseUrl}/bms/${encodeURIComponent(id)}/performance/last`);
+      const lastUpdatedAt = latestDynamicUpdate(passport.dynamicUpdates);
+      if (lastUpdatedAt) url.searchParams.set('lastUpdatedAt', lastUpdatedAt);
+      const response = await fetch(url.toString(), {
+        headers: { 'x-api-key': config.bmsApiKey },
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) {
+        return apiError(res, 502, 'UpstreamError', `BMS performance request failed with HTTP ${response.status}.`);
+      }
+      updates = await response.json();
+      if (isDynamicUpdate(updates)) {
+        updates = [updates];
+      } else if (typeof updates === 'object' && updates !== null && !Array.isArray(updates) && Object.keys(updates).length === 0) {
+        updates = [];
+      }
+    } catch (error) {
+      console.error('BMS performance request failed:', error);
+      return apiError(res, 502, 'UpstreamError', 'Unable to retrieve BMS performance updates.');
+    }
+
+    if (!Array.isArray(updates) || !updates.every(isDynamicUpdate)) {
+      return apiError(res, 502, 'UpstreamError', 'BMS response must be an array of valid DynamicUpdate objects.');
+    }
+    if (updates.length > 0) {
+      const latestTimestamp = latestDynamicUpdate(updates);
+      const latestUpdate = updates.find((update) => update.lastUpdate === latestTimestamp);
+      const result = await passportsCollection.updateOne(
+        { 'generalProductInformation.productIdentifier': id },
+        {
+          $addToSet: { dynamicUpdates: { $each: updates } },
+          ...(latestUpdate?.performance ? { $set: { performance: latestUpdate.performance } } : {}),
+        },
+      );
+      if (result.matchedCount === 0) return notFound(res, `Battery passport '${id}' was not found.`);
+    }
+    res.json({ status: 'dynamic updates imported successfully', DBPId: id, count: updates.length });
+  } catch (error) {
+    console.error('Failed to store battery passport dynamic updates:', error);
+    return apiError(res, 500, 'InternalServerError', 'Unable to store battery passport dynamic updates.');
+  }
+});
 
 app.post('/bo/dbp/', async (req, res) => {
   const passport = req.body as DigitalBatteryPassport;
