@@ -222,7 +222,13 @@ export type DynamicUpdateGeneralProductInformation = {
 export type DynamicUpdate = {
   lastUpdate: string;
   generalProductInformation: DynamicUpdateGeneralProductInformation;
-  performance: Performance | null;
+  performance?: {
+    batteryCondition: {
+      capacityFade: Partial<CapacityFade>;
+      internalResistanceIncrease: Partial<InternalResistanceIncrease>[];
+    };
+    batteryTechnicalProperties: Partial<BatteryTechnicalProperties>;
+  } | null;
 };
 
 export type DigitalBatteryPassport = {
@@ -230,7 +236,7 @@ export type DigitalBatteryPassport = {
   circularity: Circularity;
   supplyChainDueDiligence: SupplyChainDueDiligence;
   maintenanceInformation: MaintenanceInformationItem[];
-  performance: Performance;
+  performance: Performance | NonNullable<DynamicUpdate['performance']>;
   dynamicUpdates?: DynamicUpdate[];
   carbonFootprint: CarbonFootprint;
   generalProductInformation: GeneralProductInformation;

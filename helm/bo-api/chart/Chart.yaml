@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: 0.1.0
+description: CIMBATT BO-API
+name: cimbatt-bo-api
+type: application
+version: 0.3.0
+
