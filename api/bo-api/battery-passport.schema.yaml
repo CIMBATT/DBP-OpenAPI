@@ -1,0 +1,594 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://cimbatt.github.io/DBP-OpenAPI/api/bo-api/battery-passport.schema.yaml"
+title: DigitalBatteryPassport
+description: JSON Schema for a Digital Battery Passport message derived from the bo-api OpenAPI specification.
+type: object
+required:
+  - materialComposition
+  - circularity
+  - supplyChainDueDiligence
+  - maintenanceInformation
+  - performance
+  - carbonFootprint
+  - generalProductInformation
+  - labeling
+properties:
+  materialComposition:
+    $ref: "#/$defs/MaterialComposition"
+  circularity:
+    $ref: "#/$defs/Circularity"
+  supplyChainDueDiligence:
+    $ref: "#/$defs/SupplyChainDueDiligence"
+  maintenanceInformation:
+    type: array
+    items:
+      $ref: "#/$defs/MaintenanceInformationItem"
+  performance:
+    $ref: "#/$defs/Performance"
+  dynamicUpdates:
+    type: array
+    items:
+      $ref: "#/$defs/DynamicUpdate"
+  carbonFootprint:
+    $ref: "#/$defs/CarbonFootprint"
+  generalProductInformation:
+    $ref: "#/$defs/GeneralProductInformation"
+  labeling:
+    $ref: "#/$defs/Labeling"
+additionalProperties: false
+$defs:
+  Identifier:
+    type: object
+    required:
+      - identifier
+    properties:
+      identifier:
+        type: string
+    additionalProperties: false
+
+  ActivityType:
+    type: object
+    required:
+      - code
+      - definition
+    properties:
+      code:
+        type: string
+      definition:
+        type: string
+    additionalProperties: false
+
+  ComponentReference:
+    type: object
+    required:
+      - partName
+    properties:
+      partName:
+        type: string
+    additionalProperties: false
+
+  MaintenanceGeneralProductInformation:
+    type: object
+    required:
+      - operatorInformation
+      - productIdentifier
+    properties:
+      operatorInformation:
+        $ref: "#/$defs/Identifier"
+      productIdentifier:
+        type: string
+    additionalProperties: false
+
+  MaintenanceCircularity:
+    type: object
+    properties:
+      components:
+        type: array
+        items:
+          $ref: "#/$defs/ComponentReference"
+      replacementComponents:
+        type: array
+        items:
+          $ref: "#/$defs/ComponentReference"
+    additionalProperties: false
+
+  MaintenanceModification:
+    type: object
+    required:
+      - maintenanceInformation
+      - generalProductInformation
+      - circularity
+    properties:
+      maintenanceInformation:
+        type: string
+      generalProductInformation:
+        $ref: "#/$defs/MaintenanceGeneralProductInformation"
+      circularity:
+        $ref: "#/$defs/MaintenanceCircularity"
+    additionalProperties: false
+
+  MaintenanceInformationItem:
+    type: object
+    required:
+      - eventDate
+      - activityType
+      - modifications
+    properties:
+      eventDate:
+        type: string
+        format: date-time
+      activityType:
+        $ref: "#/$defs/ActivityType"
+      modifications:
+        $ref: "#/$defs/MaintenanceModification"
+    additionalProperties: false
+
+  CapacityFade:
+    type: object
+    required:
+      - capacityFadeValue
+      - lastUpdate
+    properties:
+      capacityFadeValue:
+        type: number
+      lastUpdate:
+        type: string
+    additionalProperties: false
+
+  InternalResistanceIncrease:
+    type: object
+    required:
+      - lastUpdateInternalResistanceIncrease
+      - batteryComponent
+      - internalResistanceIncreaseValue
+    properties:
+      lastUpdateInternalResistanceIncrease:
+        type: string
+      batteryComponent:
+        type: string
+      internalResistanceIncreaseValue:
+        type: number
+    additionalProperties: false
+
+  BatteryCondition:
+    type: object
+    required:
+      - capacityFade
+      - internalResistanceIncrease
+    properties:
+      capacityFade:
+        $ref: "#/$defs/CapacityFade"
+      internalResistanceIncrease:
+        type: array
+        items:
+          $ref: "#/$defs/InternalResistanceIncrease"
+    additionalProperties: false
+
+  InitialInternalResistance:
+    type: object
+    required:
+      - batteryComponent
+      - ohmicResistance
+    properties:
+      batteryComponent:
+        type: string
+      ohmicResistance:
+        type: number
+    additionalProperties: false
+
+  OriginalPowerCapability:
+    type: object
+    required:
+      - powerCapabilityAt
+      - atSoC
+    properties:
+      powerCapabilityAt:
+        type: number
+      atSoC:
+        type: number
+    additionalProperties: false
+
+  TemperatureRangeIdleState:
+    type: object
+    required:
+      - maximum
+      - minimum
+    properties:
+      maximum:
+        type: number
+      minimum:
+        type: number
+    additionalProperties: false
+
+  BatteryTechnicalProperties:
+    type: object
+    required:
+      - roundTripEfficiencyFade
+      - cRate
+      - initialInternalResistance
+      - originalPowerCapability
+      - ratedCapacity
+      - capacityThresholdForExhaustion
+      - nominalVoltage
+      - lifetimeReferenceTest
+      - powerCapabilityRatio
+      - expectedLifetime
+      - powerFade
+      - maximumVoltage
+      - ratedEnergy
+      - cRateLifeCycleTest
+      - roundTripEfficiencyat50PerCentCycleLife
+      - ratedMaximumPower
+      - roundtripEfficiency
+      - temperatureRangeIdleState
+      - minimumVoltage
+      - initialSelfDischarge
+      - expectedNumberOfCycles
+    properties:
+      roundTripEfficiencyFade:
+        type: number
+      cRate:
+        type: number
+      initialInternalResistance:
+        type: array
+        items:
+          $ref: "#/$defs/InitialInternalResistance"
+      originalPowerCapability:
+        type: array
+        items:
+          $ref: "#/$defs/OriginalPowerCapability"
+      ratedCapacity:
+        type: number
+      capacityThresholdForExhaustion:
+        type: number
+      nominalVoltage:
+        type: number
+      lifetimeReferenceTest:
+        type: string
+      powerCapabilityRatio:
+        type: number
+      expectedLifetime:
+        type: number
+      powerFade:
+        type: number
+      maximumVoltage:
+        type: number
+      ratedEnergy:
+        type: number
+      cRateLifeCycleTest:
+        type: number
+      roundTripEfficiencyat50PerCentCycleLife:
+        type: number
+      ratedMaximumPower:
+        type: number
+      roundtripEfficiency:
+        type: number
+      temperatureRangeIdleState:
+        $ref: "#/$defs/TemperatureRangeIdleState"
+      minimumVoltage:
+        type: number
+      initialSelfDischarge:
+        type: number
+      expectedNumberOfCycles:
+        type: number
+    additionalProperties: false
+
+  Performance:
+    type: object
+    required:
+      - batteryCondition
+      - batteryTechnicalProperties
+    properties:
+      batteryCondition:
+        $ref: "#/$defs/BatteryCondition"
+      batteryTechnicalProperties:
+        $ref: "#/$defs/BatteryTechnicalProperties"
+    additionalProperties: false
+
+  HazardousSubstanceLocation:
+    type: object
+    required:
+      - componentName
+    properties:
+      componentName:
+        type: string
+    additionalProperties: false
+
+  HazardousSubstance:
+    type: object
+    required:
+      - hazardousSubstanceIdentifier
+      - hazardousSubstanceImpact
+      - hazardousSubstanceLocation
+    properties:
+      hazardousSubstanceIdentifier:
+        type: string
+      hazardousSubstanceImpact:
+        type: array
+        items:
+          type: string
+      hazardousSubstanceLocation:
+        $ref: "#/$defs/HazardousSubstanceLocation"
+    additionalProperties: false
+
+  BatteryChemistry:
+    type: object
+    required:
+      - shortName
+    properties:
+      shortName:
+        type: string
+      clearName:
+        type: string
+    additionalProperties: false
+
+  BatteryMaterialLocation:
+    type: object
+    required:
+      - componentName
+    properties:
+      componentName:
+        type: string
+    additionalProperties: false
+
+  BatteryMaterial:
+    type: object
+    required:
+      - batteryMaterial
+      - batteryMaterialLocation
+      - isCriticalRawMaterial
+    properties:
+      batteryMaterial:
+        type: string
+      batteryMaterialLocation:
+        type: array
+        items:
+          $ref: "#/$defs/BatteryMaterialLocation"
+      isCriticalRawMaterial:
+        type: boolean
+    additionalProperties: false
+
+  MaterialComposition:
+    type: object
+    required:
+      - batteryChemistry
+      - hazardousSubstances
+      - batteryMaterials
+    properties:
+      batteryChemistry:
+        $ref: "#/$defs/BatteryChemistry"
+      hazardousSubstances:
+        type: array
+        items:
+          $ref: "#/$defs/HazardousSubstance"
+      batteryMaterials:
+        type: array
+        items:
+          $ref: "#/$defs/BatteryMaterial"
+    additionalProperties: false
+
+  RecycledContent:
+    type: object
+    required:
+      - postConsumerShare
+      - recycledMaterial
+      - preConsumerShare
+    properties:
+      postConsumerShare:
+        type: number
+      recycledMaterial:
+        type: string
+      preConsumerShare:
+        type: number
+    additionalProperties: false
+
+  SparePartSource:
+    type: object
+    properties:
+      nameOfSupplier:
+        type: string
+      components:
+        type: array
+        items:
+          $ref: "#/$defs/ComponentReference"
+    additionalProperties: false
+
+  EndOfLifeInformation:
+    type: object
+    required:
+      - informationOnCollection
+      - wastePrevention
+      - separateCollection
+    properties:
+      informationOnCollection:
+        type: string
+      wastePrevention:
+        type: string
+      separateCollection:
+        type: string
+    additionalProperties: false
+
+  Circularity:
+    type: object
+    required:
+      - renewableContent
+      - recycledContent
+      - sparePartSources
+      - endOfLifeInformation
+    properties:
+      renewableContent:
+        type: number
+      recycledContent:
+        type: array
+        items:
+          $ref: "#/$defs/RecycledContent"
+      sparePartSources:
+        type: array
+        items:
+          $ref: "#/$defs/SparePartSource"
+      endOfLifeInformation:
+        $ref: "#/$defs/EndOfLifeInformation"
+    additionalProperties: false
+
+  SupplyChainDueDiligence:
+    type: object
+    required:
+      - supplyChainDueDiligenceReport
+      - supplyChainIndices
+      - thirdPartyAssurances
+    properties:
+      supplyChainDueDiligenceReport:
+        type: string
+      supplyChainIndices:
+        type: number
+      thirdPartyAssurances:
+        type: string
+    additionalProperties: false
+
+  CarbonFootprintLifecycleStage:
+    type: object
+    required:
+      - carbonFootprint
+      - lifecycleStage
+    properties:
+      carbonFootprint:
+        type: number
+      lifecycleStage:
+        type: string
+    additionalProperties: false
+
+  CarbonFootprintPerLifecycleStage:
+    type: object
+    required:
+      - carbonFootprintPerLifecycleStage1
+    properties:
+      carbonFootprintPerLifecycleStage1:
+        type: array
+        items:
+          $ref: "#/$defs/CarbonFootprintLifecycleStage"
+    additionalProperties: false
+
+  CarbonFootprint:
+    type: object
+    required:
+      - carbonFootprintPerformanceClass
+      - carbonFootprintStudy
+      - batteryCarbonFootprint
+      - carbonFootprintPerLifecycleStage
+    properties:
+      absoluteCarbonFootprint:
+        type: number
+      carbonFootprintPerformanceClass:
+        type: string
+      carbonFootprintStudy:
+        type: string
+      batteryCarbonFootprint:
+        type: number
+      carbonFootprintPerLifecycleStage:
+        $ref: "#/$defs/CarbonFootprintPerLifecycleStage"
+    additionalProperties: false
+
+  ManufacturingPlace:
+    type: object
+    required:
+      - postalCode1
+    properties:
+      postalCode1:
+        type: string
+    additionalProperties: false
+
+  GeneralProductInformation:
+    type: object
+    required:
+      - manufacturerInformation
+      - puttingIntoService
+      - manufacturingDate
+      - batteryMass
+      - manufacturingPlace
+      - productIdentifier
+      - warrantyPeriod
+      - batteryCategory
+    properties:
+      manufacturerInformation:
+        $ref: "#/$defs/Identifier"
+      puttingIntoService:
+        type: string
+      manufacturingDate:
+        type: string
+      operatorInformation:
+        $ref: "#/$defs/Identifier"
+      batteryMass:
+        type: number
+      manufacturingPlace:
+        $ref: "#/$defs/ManufacturingPlace"
+      productIdentifier:
+        type: string
+      warrantyPeriod:
+        type: string
+      batteryCategory:
+        type: string
+      batteryPassportIdentifier:
+        type: string
+    additionalProperties: false
+
+  Label:
+    type: object
+    required:
+      - labelingMeaning
+      - labelingSymbol
+      - labelingSubject
+    properties:
+      labelingMeaning:
+        type: string
+      labelingSymbol:
+        type: string
+      labelingSubject:
+        type: string
+    additionalProperties: false
+
+  Labeling:
+    type: object
+    required:
+      - resultOfTestReport
+      - declarationOfConformity
+      - labels
+    properties:
+      resultOfTestReport:
+        type: string
+      declarationOfConformity:
+        type: string
+      labels:
+        type: array
+        items:
+          $ref: "#/$defs/Label"
+    additionalProperties: false
+
+  DynamicUpdateGeneralProductInformation:
+    type: object
+    required:
+      - batteryStatus
+      - operatorInformation
+    properties:
+      batteryStatus:
+        type: string
+      operatorInformation:
+        $ref: "#/$defs/Identifier"
+    additionalProperties: false
+
+  DynamicUpdate:
+    type: object
+    required:
+      - lastUpdate
+      - generalProductInformation
+      - performance
+    properties:
+      lastUpdate:
+        type: string
+        format: date-time
+      generalProductInformation:
+        $ref: "#/$defs/DynamicUpdateGeneralProductInformation"
+      performance:
+        anyOf:
+          - $ref: "#/$defs/Performance"
+          - type: "null"
+    additionalProperties: false
