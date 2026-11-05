@@ -35,7 +35,7 @@ api:
           - path: /
             pathType: ImplementationSpecific
     tls:
-      - secretName: bo-api.cimbatt.digital-passport.org
+      - secretName: bo-api.cimbatt.digital-passport.org-tls
         hosts:
           - bo-api.cimbatt.digital-passport.org
 

@@ -48,11 +48,11 @@ spec:
             backend:
 {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $.Release.Name }}-do
+                name: {{ $.Release.Name }}-bo-api
                 port:
                   number: {{ $svcPort }}
 {{- else }}
-              serviceName: {{ $.Release.Name }}-do
+              serviceName: {{ $.Release.Name }}-bo-api
               servicePort: {{ $svcPort }}
 {{- end }}
 {{- end }}
